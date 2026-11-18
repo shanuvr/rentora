@@ -20,14 +20,19 @@ export default function AdminLayout() {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Normalize existing bookings to remove deposit calculations if any were saved
+          // Normalize existing bookings to remove deposit calculations and heal image paths
           const normalized = parsed.map((b) => {
             const subtotal = b.items?.reduce((sum, item) => sum + (item.subtotal || item.rentalPrice || 0), 0) || b.subtotal || b.totalAmount || 300;
+            const updatedItems = b.items?.map((item) => ({
+              ...item,
+              image: item.image === '/images/tools/grinder.jpg' ? '/images/tools/angle_grinder.jpg' : (item.image || '/images/tools/angle_grinder.jpg'),
+            }));
             return {
               ...b,
               depositAmount: 0,
               subtotal,
               totalAmount: subtotal,
+              items: updatedItems || b.items,
               customer: b.customer || {
                 name: 'Rahul Sharma',
                 phone: '+91 98765 43210',
@@ -36,6 +41,8 @@ export default function AdminLayout() {
             };
           });
           setBookings(normalized);
+          // Persist healed paths back to localStorage
+          localStorage.setItem('rentora_bookings', JSON.stringify(normalized));
           return;
         }
       }
@@ -70,7 +77,7 @@ export default function AdminLayout() {
               name: '4-Inch Angle Grinder Machine (850W)',
               category: 'grinding',
               categoryName: 'Grinders & Cutters',
-              image: '/images/tools/grinder.jpg',
+              image: '/images/tools/angle_grinder.jpg',
               rentalPrice: 300,
               priceUnit: 'day',
               fromDate: toISO(today),

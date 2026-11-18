@@ -61,12 +61,12 @@ export default function AdminUndelivered() {
                     {booking.items?.map((item, idx) => (
                       <div key={idx} className="flex items-center gap-3">
                         <img
-                          src={item.image || '/images/tools/grinder.jpg'}
+                          src={item.image || '/images/tools/angle_grinder.jpg'}
                           alt={item.name}
                           className="w-10 h-10 rounded-lg object-cover border border-stone-200 bg-white shrink-0"
                           onError={(e) => {
                             e.target.onerror = null;
-                            e.target.src = '/images/tools/grinder.jpg';
+                            e.target.src = '/images/tools/angle_grinder.jpg';
                           }}
                         />
                         <div className="min-w-0 flex-1">

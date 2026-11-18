@@ -297,12 +297,12 @@ export default function AdminBookings() {
                         {/* Tool Photo */}
                         <div className="w-12 h-12 rounded-lg overflow-hidden bg-stone-100 border border-stone-200/80 shrink-0">
                           <img
-                            src={item.image || '/images/tools/grinder.jpg'}
+                            src={item.image || '/images/tools/angle_grinder.jpg'}
                             alt={item.name}
                             className="w-full h-full object-cover"
                             onError={(e) => {
                               e.target.onerror = null;
-                              e.target.src = '/images/tools/grinder.jpg';
+                              e.target.src = '/images/tools/angle_grinder.jpg';
                             }}
                           />
                         </div>
@@ -318,8 +318,9 @@ export default function AdminBookings() {
                               {item.categoryName || 'Equipment'}
                             </span>
                             <span className="text-stone-300">·</span>
-                            <span className="font-medium text-stone-700 whitespace-nowrap">
-                              📅 {fromStr} → {toStr} ({daysLabel})
+                            <span className="inline-flex items-center gap-1 font-medium text-stone-700 whitespace-nowrap">
+                              <Calendar className="w-3 h-3 text-stone-400 shrink-0" />
+                              <span>{fromStr} → {toStr} ({daysLabel})</span>
                             </span>
                             <span className="text-stone-300">·</span>
                             <span className="text-stone-400">
