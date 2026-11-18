@@ -90,13 +90,8 @@ export default function ProductCard({ product, onAddToCart, onSelect }) {
             {name}
           </h3>
 
-          {/* Tag & Specs (Wrapped across lines so all specs + tag are fully visible on mobile) */}
+          {/* Specs */}
           <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 mt-1.5">
-            {tags[0] && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9.5px] sm:text-[10px] md:text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200/60 shrink-0">
-                {tags[0]}
-              </span>
-            )}
             {specs.slice(0, 3).map((spec, idx) => {
               const Icon = SPEC_ICONS[spec.icon] || Zap;
               return (
