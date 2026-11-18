@@ -542,9 +542,13 @@ export default function AdminETR() {
                       #{bookingId}
                     </span>
                     <span className="text-stone-300">·</span>
-                    <span className="text-stone-600 font-medium">
+                    <Link
+                      to={`/admin/history?customer=${encodeURIComponent(customer.name)}`}
+                      className="text-stone-700 hover:text-amber-800 font-medium hover:underline transition-colors"
+                      title="View complete customer rental history"
+                    >
                       {customer.name}
-                    </span>
+                    </Link>
                     {customer.phone && (
                       <>
                         <span className="text-stone-300">·</span>
