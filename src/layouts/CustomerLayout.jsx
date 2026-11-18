@@ -1,46 +1,54 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import BottomNavigation from '../components/customer/BottomNavigation';
 import LanguageModal from '../components/common/LanguageModal';
 
-export default function CustomerLayout() {
-  const [cartCount, setCartCount] = useState(0);
-  const [selectedLang, setSelectedLang] = useState('en');
-  const [showLangModal, setShowLangModal] = useState(false);
-  const [canCloseLangModal, setCanCloseLangModal] = useState(true);
-
-  // Sync cart count from localStorage
-  const updateCartCount = () => {
-    try {
-      const stored = localStorage.getItem('rentora_cart');
-      if (stored) {
-        const items = JSON.parse(stored);
-        if (Array.isArray(items)) {
-          const uniqueIds = new Set(items.map((i) => i.id).filter(Boolean));
-          setCartCount(uniqueIds.size);
-          return;
-        }
+const getStoredCartCount = () => {
+  try {
+    const stored = localStorage.getItem('rentora_cart');
+    if (stored) {
+      const items = JSON.parse(stored);
+      if (Array.isArray(items)) {
+        return items.reduce((sum, item) => sum + (item.quantity || 1), 0);
       }
-      setCartCount(0);
-    } catch {
-      setCartCount(0);
     }
+    return 0;
+  } catch {
+    return 0;
+  }
+};
+
+const getStoredLang = () => {
+  try {
+    return localStorage.getItem('rentora_lang') || 'en';
+  } catch {
+    return 'en';
+  }
+};
+
+export default function CustomerLayout() {
+  const [cartCount, setCartCount] = useState(getStoredCartCount);
+  const [selectedLang, setSelectedLang] = useState(getStoredLang);
+  const [showLangModal, setShowLangModal] = useState(() => {
+    try {
+      return !localStorage.getItem('rentora_lang');
+    } catch {
+      return false;
+    }
+  });
+  const [canCloseLangModal, setCanCloseLangModal] = useState(() => {
+    try {
+      return Boolean(localStorage.getItem('rentora_lang'));
+    } catch {
+      return true;
+    }
+  });
+
+  const updateCartCount = () => {
+    setCartCount(getStoredCartCount());
   };
 
   useEffect(() => {
-    updateCartCount();
-
-    // Check language preference in localStorage
-    const savedLang = localStorage.getItem('rentora_lang');
-    if (!savedLang) {
-      // First visit: automatically open language modal
-      setCanCloseLangModal(false);
-      setShowLangModal(true);
-    } else {
-      setSelectedLang(savedLang);
-      setCanCloseLangModal(true);
-    }
-
     const handleCartUpdate = () => updateCartCount();
     window.addEventListener('rentora_cart_updated', handleCartUpdate);
     window.addEventListener('storage', handleCartUpdate);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   Heart,
   Zap,
@@ -19,6 +19,7 @@ import {
   Flame,
   Clock,
   Plus,
+  Check,
   Wrench,
 } from 'lucide-react';
 
@@ -35,16 +36,27 @@ const formatETA = (dateStr) => {
     .replace('December', 'Dec');
 };
 
-export default function ProductCard({ product, onAddToCart, onSelect }) {
+export default function ProductCard({
+  product,
+  onAddToCart,
+  onSelect,
+  isInCart = false,
+  onViewCart,
+}) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [imgError, setImgError] = useState(false);
+  const [prevImage, setPrevImage] = useState(product?.image);
+
+  if (prevImage !== product?.image) {
+    setPrevImage(product?.image);
+    setImgError(false);
+  }
 
   const {
-    id, name, image, specs = [], tags = [], bullets = [], offer,
+    name, image, specs = [], bullets = [],
     rentalPrice, priceUnit = 'day', isAvailable = true, expectedAvailability,
+    stock,
   } = product;
-
-  useEffect(() => { setImgError(false); }, [image]);
 
   return (
     <div
@@ -134,9 +146,21 @@ export default function ProductCard({ product, onAddToCart, onSelect }) {
                     /{priceUnit}
                   </span>
                   {isAvailable && (
-                    <span className="ml-1.5 inline-flex items-center gap-1 text-[9.5px] sm:text-[10.5px] font-medium text-emerald-600">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                      In Stock
+                    <span
+                      className={`ml-1.5 inline-flex items-center gap-1 text-[9.5px] sm:text-[10.5px] font-medium ${
+                        stock === 1 ? 'text-amber-700' : 'text-emerald-600'
+                      }`}
+                    >
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                          stock === 1 ? 'bg-amber-500' : 'bg-emerald-500'
+                        }`}
+                      />
+                      {stock === 1
+                        ? 'Only 1 left'
+                        : typeof stock === 'number' && stock > 1
+                        ? `${stock} in stock`
+                        : 'In Stock'}
                     </span>
                   )}
                 </div>
@@ -148,15 +172,35 @@ export default function ProductCard({ product, onAddToCart, onSelect }) {
               disabled={!isAvailable}
               onClick={(e) => {
                 e.stopPropagation();
-                if (isAvailable && onAddToCart) onAddToCart(product);
+                if (!isAvailable) return;
+                if (isInCart && onViewCart) {
+                  onViewCart(product);
+                } else if (onAddToCart) {
+                  onAddToCart(product);
+                }
               }}
-              className={`inline-flex items-center justify-center gap-0.5 h-7 sm:h-8 px-3 sm:px-4 rounded-lg font-semibold text-[10.5px] sm:text-xs transition-all duration-100 shrink-0 ${isAvailable
-                  ? 'bg-stone-900 hover:bg-stone-800 active:scale-95 text-white'
+              className={`inline-flex items-center justify-center gap-1 h-7 sm:h-8 px-3 sm:px-3.5 rounded-lg font-semibold text-[10.5px] sm:text-xs transition-all duration-150 shrink-0 ${isAvailable
+                  ? isInCart
+                    ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white shadow-2xs cursor-pointer'
+                    : 'bg-stone-900 hover:bg-stone-800 active:scale-95 text-white cursor-pointer'
                   : 'bg-stone-100 text-stone-400 cursor-not-allowed'
                 }`}
             >
-              {isAvailable && <Plus className="w-3 h-3 stroke-[2.5]" />}
-              <span>{isAvailable ? 'Add' : 'Unavailable'}</span>
+              {isAvailable ? (
+                isInCart ? (
+                  <>
+                    <Check className="w-3 h-3 stroke-[2.5]" />
+                    <span>Added</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-3 h-3 stroke-[2.5]" />
+                    <span>Add</span>
+                  </>
+                )
+              ) : (
+                <span>Unavailable</span>
+              )}
             </button>
           </div>
         </div>

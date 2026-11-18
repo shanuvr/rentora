@@ -1,53 +1,47 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   CalendarCheck,
   ArrowLeft,
-  Calendar,
   CheckCircle2,
   Trash2,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export default function MyBookings() {
-  const [bookings, setBookings] = useState([]);
-
-  const loadBookings = () => {
-    try {
-      const stored = localStorage.getItem('rentora_bookings');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          // Filter out duplicate bookings created within 5 seconds of each other
-          const unique = [];
-          for (const b of parsed) {
-            const isDuplicate = unique.some(
-              (u) =>
-                u.totalAmount === b.totalAmount &&
-                JSON.stringify(u.items?.map((i) => i.id)) ===
-                  JSON.stringify(b.items?.map((i) => i.id)) &&
-                Math.abs(new Date(u.createdAt) - new Date(b.createdAt)) < 5000
-            );
-            if (!isDuplicate) {
-              unique.push(b);
-            }
+const loadStoredBookings = () => {
+  try {
+    const stored = localStorage.getItem('rentora_bookings');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        const unique = [];
+        for (const b of parsed) {
+          const isDuplicate = unique.some(
+            (u) =>
+              u.totalAmount === b.totalAmount &&
+              JSON.stringify(u.items?.map((i) => i.id)) ===
+                JSON.stringify(b.items?.map((i) => i.id)) &&
+              Math.abs(new Date(u.createdAt) - new Date(b.createdAt)) < 5000
+          );
+          if (!isDuplicate) {
+            unique.push(b);
           }
-          setBookings(unique);
-
-          // If duplicates were filtered out, heal localStorage immediately
-          if (unique.length !== parsed.length) {
-            localStorage.setItem('rentora_bookings', JSON.stringify(unique));
-          }
-          return;
         }
+        return unique;
       }
-      setBookings([]);
-    } catch {
-      setBookings([]);
     }
-  };
+    return [];
+  } catch {
+    return [];
+  }
+};
+
+export default function MyBookings() {
+  const [bookings, setBookings] = useState(loadStoredBookings);
 
   useEffect(() => {
-    loadBookings();
+    const handleUpdate = () => setBookings(loadStoredBookings());
+    window.addEventListener('storage', handleUpdate);
+    return () => window.removeEventListener('storage', handleUpdate);
   }, []);
 
   const handleCancelBooking = (bookingId) => {
@@ -158,9 +152,15 @@ export default function MyBookings() {
                     <div className="flex-1 min-w-0">
                       <h4 className="text-xs font-bold text-stone-900 truncate">
                         {item.name}
+                        {item.quantity > 1 && (
+                          <span className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-stone-200 text-stone-700">
+                            ×{item.quantity}
+                          </span>
+                        )}
                       </h4>
                       <p className="text-[10px] text-stone-500">
                         {item.formattedFrom} → {item.formattedTo} ({item.rentalDays} {item.rentalDays === 1 ? 'day' : 'days'})
+                        {item.quantity > 1 && ` • ${item.quantity} units`}
                       </p>
                     </div>
 

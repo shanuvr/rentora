@@ -26,6 +26,7 @@ export const DUMMY_PRODUCTS = [
     offer: 'Includes 5 Drill Bits Set',
     rentalPrice: 250,
     priceUnit: 'day',
+    stock: 4,
     isAvailable: true,
     expectedAvailability: null,
   },
@@ -45,6 +46,7 @@ export const DUMMY_PRODUCTS = [
     offer: 'Free Extra Carbide Blade',
     rentalPrice: 400,
     priceUnit: 'day',
+    stock: 6,
     isAvailable: true,
     expectedAvailability: null,
   },
@@ -64,6 +66,7 @@ export const DUMMY_PRODUCTS = [
     offer: 'Oil Mix & File Included',
     rentalPrice: 700,
     priceUnit: 'day',
+    stock: 0,
     isAvailable: false,
     expectedAvailability: '24 Nov',
   },
@@ -83,6 +86,7 @@ export const DUMMY_PRODUCTS = [
     offer: 'Pair of 2 Pans + 1 Shovel',
     rentalPrice: 100,
     priceUnit: 'day',
+    stock: 7,
     isAvailable: true,
     expectedAvailability: null,
   },
@@ -102,6 +106,7 @@ export const DUMMY_PRODUCTS = [
     offer: 'Includes 2 Cutting Wheels',
     rentalPrice: 300,
     priceUnit: 'day',
+    stock: 3,
     isAvailable: true,
     expectedAvailability: null,
   },
@@ -121,6 +126,7 @@ export const DUMMY_PRODUCTS = [
     offer: 'Includes Pointed & Flat Chisels',
     rentalPrice: 900,
     priceUnit: 'day',
+    stock: 0,
     isAvailable: false,
     expectedAvailability: '22 Nov',
   },
@@ -140,6 +146,7 @@ export const DUMMY_PRODUCTS = [
     offer: 'Foldable into Car Boot',
     rentalPrice: 350,
     priceUnit: 'day',
+    stock: 2,
     isAvailable: true,
     expectedAvailability: null,
   },
@@ -159,6 +166,7 @@ export const DUMMY_PRODUCTS = [
     offer: 'Includes 15m Delivery Hose',
     rentalPrice: 500,
     priceUnit: 'day',
+    stock: 5,
     isAvailable: true,
     expectedAvailability: null,
   },
@@ -178,6 +186,7 @@ export const DUMMY_PRODUCTS = [
     offer: 'Face Shield & Cables Included',
     rentalPrice: 450,
     priceUnit: 'day',
+    stock: 1,
     isAvailable: true,
     expectedAvailability: null,
   },
@@ -197,6 +206,7 @@ export const DUMMY_PRODUCTS = [
     offer: 'Free Foam Cannon Included',
     rentalPrice: 450,
     priceUnit: 'day',
+    stock: 0,
     isAvailable: false,
     expectedAvailability: '25 Nov',
   },
@@ -216,6 +226,7 @@ export const DUMMY_PRODUCTS = [
     offer: 'Clean Oiled Wheel Axle',
     rentalPrice: 200,
     priceUnit: 'day',
+    stock: 6,
     isAvailable: true,
     expectedAvailability: null,
   },
@@ -235,6 +246,7 @@ export const DUMMY_PRODUCTS = [
     offer: 'Includes Extra Scoring Wheel',
     rentalPrice: 300,
     priceUnit: 'day',
+    stock: 3,
     isAvailable: true,
     expectedAvailability: null,
   },
@@ -247,10 +259,29 @@ export const getStoredProducts = () => {
     if (stored) {
       const parsed = JSON.parse(stored);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        const defaultStockMap = {
+          'tool-001': 4,
+          'tool-002': 6,
+          'tool-003': 0,
+          'tool-004': 7,
+          'tool-005': 3,
+          'tool-006': 0,
+          'tool-007': 2,
+          'tool-008': 5,
+          'tool-009': 1,
+          'tool-010': 0,
+          'tool-011': 6,
+          'tool-012': 3,
+        };
+        return parsed.map((p) => ({
+          ...p,
+          stock: typeof p.stock === 'number' ? p.stock : (defaultStockMap[p.id] ?? 3),
+        }));
       }
     }
-  } catch {}
+  } catch (err) {
+    void err;
+  }
   return DUMMY_PRODUCTS;
 };
 
@@ -259,5 +290,7 @@ export const saveStoredProducts = (products) => {
   try {
     localStorage.setItem('rentora_products', JSON.stringify(products));
     window.dispatchEvent(new Event('rentora_products_updated'));
-  } catch {}
+  } catch (err) {
+    void err;
+  }
 };

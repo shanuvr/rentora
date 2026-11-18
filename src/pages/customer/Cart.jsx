@@ -1,61 +1,64 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   ShoppingBag,
   ArrowLeft,
   Trash2,
   Calendar,
-  ShieldCheck,
   ArrowRight,
   CheckCircle2,
   Loader2,
   Lock,
   CreditCard,
+  Plus,
+  Minus,
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
+const generateRandomId = (prefix) =>
+  `${prefix}-${Math.floor(100000 + Math.random() * 900000)}`;
+
+const loadCartFromStorage = () => {
+  try {
+    const stored = localStorage.getItem('rentora_cart');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed)) {
+        const unique = [];
+        const seenIds = new Set();
+        for (const item of parsed) {
+          if (item && item.id && !seenIds.has(item.id)) {
+            seenIds.add(item.id);
+            const maxStock = typeof item.stock === 'number' ? item.stock : 5;
+            const qty = Math.max(1, Math.min(maxStock, item.quantity || 1));
+            const days = item.rentalDays || 1;
+            const subtotal = item.rentalPrice * days * qty;
+            unique.push({
+              ...item,
+              stock: maxStock,
+              quantity: qty,
+              subtotal,
+              totalAmount: subtotal,
+            });
+          }
+        }
+        return unique;
+      }
+    }
+    return [];
+  } catch {
+    return [];
+  }
+};
+
 export default function Cart() {
   const navigate = useNavigate();
-  const [cartItems, setCartItems] = useState([]);
+  const [cartItems, setCartItems] = useState(loadCartFromStorage);
   const [paymentState, setPaymentState] = useState('idle'); // 'idle' | 'processing' | 'success'
   const [txnId, setTxnId] = useState('');
   const isPayingRef = useRef(false);
 
-  // Load cart from localStorage with automatic duplicate cleanup
-  const loadCart = () => {
-    try {
-      const stored = localStorage.getItem('rentora_cart');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          // Deduplicate by product id
-          const unique = [];
-          const seenIds = new Set();
-          for (const item of parsed) {
-            if (item && item.id && !seenIds.has(item.id)) {
-              seenIds.add(item.id);
-              unique.push(item);
-            }
-          }
-          setCartItems(unique);
-
-          // If duplicates were present in localStorage, heal it immediately
-          if (unique.length !== parsed.length) {
-            localStorage.setItem('rentora_cart', JSON.stringify(unique));
-            window.dispatchEvent(new Event('rentora_cart_updated'));
-          }
-          return;
-        }
-      }
-      setCartItems([]);
-    } catch {
-      setCartItems([]);
-    }
-  };
-
   useEffect(() => {
-    loadCart();
-
-    const handleUpdate = () => loadCart();
+    const handleUpdate = () => setCartItems(loadCartFromStorage());
     window.addEventListener('rentora_cart_updated', handleUpdate);
     window.addEventListener('storage', handleUpdate);
     return () => {
@@ -63,6 +66,29 @@ export default function Cart() {
       window.removeEventListener('storage', handleUpdate);
     };
   }, []);
+
+  // Update item quantity (1 to available stock)
+  const handleUpdateQuantity = (cartItemId, newQty) => {
+    const updated = cartItems.map((item) => {
+      if (item.cartItemId === cartItemId) {
+        const maxStock = typeof item.stock === 'number' ? item.stock : 5;
+        if (newQty < 1 || newQty > maxStock) return item;
+        const qty = Math.max(1, Math.min(maxStock, newQty));
+        const days = item.rentalDays || 1;
+        const subtotal = item.rentalPrice * days * qty;
+        return {
+          ...item,
+          quantity: qty,
+          subtotal,
+          totalAmount: subtotal,
+        };
+      }
+      return item;
+    });
+    setCartItems(updated);
+    localStorage.setItem('rentora_cart', JSON.stringify(updated));
+    window.dispatchEvent(new Event('rentora_cart_updated'));
+  };
 
   // Remove single item from cart
   const handleRemoveItem = (cartItemId) => {
@@ -86,6 +112,10 @@ export default function Cart() {
     (sum, item) => sum + (item.subtotal || 0),
     0
   );
+  const totalQuantity = cartItems.reduce(
+    (sum, item) => sum + (item.quantity || 1),
+    0
+  );
   const grandTotal = rentalSubtotal;
 
   // Proceed to Book with Payment Simulation
@@ -94,14 +124,14 @@ export default function Cart() {
     isPayingRef.current = true;
 
     // Step 1: Start Payment Processing
-    const generatedTxnId = `TXN-${Math.floor(100000 + Math.random() * 900000)}`;
+    const generatedTxnId = generateRandomId('TXN');
     setTxnId(generatedTxnId);
     setPaymentState('processing');
 
     // Step 2: 2-second realistic payment simulation
     setTimeout(() => {
       const newBooking = {
-        bookingId: `BK-${Math.floor(100000 + Math.random() * 900000)}`,
+        bookingId: generateRandomId('BK'),
         txnId: generatedTxnId,
         createdAt: new Date().toISOString(),
         status: 'Confirmed',
@@ -158,7 +188,7 @@ export default function Cart() {
           <div>
             <h1 className="text-base font-bold text-stone-900">Rental Cart</h1>
             <p className="text-[11px] text-stone-500 font-medium">
-              {cartItems.length} {cartItems.length === 1 ? 'tool' : 'tools'} selected
+              {totalQuantity} {totalQuantity === 1 ? 'tool' : 'tools'} selected
             </p>
           </div>
         </div>
@@ -227,14 +257,67 @@ export default function Cart() {
                     </span>
                   </div>
 
-                  {/* Price Calculation Row */}
-                  <div className="flex items-baseline justify-between mt-2 pt-1.5 border-t border-stone-100">
-                    <span className="text-[11px] text-stone-500 font-medium">
-                      ₹{item.rentalPrice} × {item.rentalDays} {item.rentalDays === 1 ? 'day' : 'days'}
-                    </span>
-                    <span className="text-sm font-bold text-stone-900 tabular-nums">
-                      ₹{(item.subtotal || 0).toLocaleString('en-IN')}
-                    </span>
+                  {/* Price Calculation & Quantity Stepper */}
+                  <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-stone-100 flex-wrap gap-2">
+                    <div className="text-[11px] text-stone-500 font-medium">
+                      <span>₹{item.rentalPrice}/day × {item.rentalDays} {item.rentalDays === 1 ? 'day' : 'days'}</span>
+                      {(item.quantity || 1) > 1 && (
+                        <span className="text-stone-800 font-bold ml-1">
+                          × {item.quantity}
+                        </span>
+                      )}
+                      {typeof item.stock === 'number' && (
+                        <span className="text-[10px] text-stone-400 block xs:inline xs:ml-1.5">
+                          ({item.stock} in stock)
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2.5 sm:gap-3">
+                      {/* Quantity Stepper */}
+                      <div className="flex items-center border border-stone-300 rounded-lg bg-stone-50 overflow-hidden shadow-2xs">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleUpdateQuantity(
+                              item.cartItemId,
+                              (item.quantity || 1) - 1
+                            )
+                          }
+                          disabled={(item.quantity || 1) <= 1}
+                          className="w-7 h-7 flex items-center justify-center text-stone-600 hover:bg-stone-200 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
+                          title="Decrease quantity"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="w-7 text-center text-xs font-bold text-stone-900 tabular-nums select-none">
+                          {item.quantity || 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleUpdateQuantity(
+                              item.cartItemId,
+                              (item.quantity || 1) + 1
+                            )
+                          }
+                          disabled={(item.quantity || 1) >= (typeof item.stock === 'number' ? item.stock : 5)}
+                          className="w-7 h-7 flex items-center justify-center text-stone-600 hover:bg-stone-200 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
+                          title={
+                            (item.quantity || 1) >= (typeof item.stock === 'number' ? item.stock : 5)
+                              ? `Max ${item.stock} units available in stock`
+                              : 'Increase quantity'
+                          }
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+
+                      {/* Line Subtotal */}
+                      <span className="text-xs sm:text-sm font-bold text-stone-900 tabular-nums min-w-[56px] text-right">
+                        ₹{(item.subtotal || 0).toLocaleString('en-IN')}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -249,7 +332,7 @@ export default function Cart() {
 
             <div className="space-y-1.5 text-xs text-stone-600">
               <div className="flex justify-between">
-                <span>Total Rental Charges ({cartItems.length} {cartItems.length === 1 ? 'tool' : 'tools'})</span>
+                <span>Total Rental Charges ({totalQuantity} {totalQuantity === 1 ? 'tool' : 'tools'})</span>
                 <span className="font-semibold text-stone-900 tabular-nums">
                   ₹{rentalSubtotal.toLocaleString('en-IN')}
                 </span>

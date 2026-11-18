@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Lock,
   KeyRound,
@@ -8,19 +8,12 @@ import {
   EyeOff,
   Save,
   Store,
-  Clock,
   Boxes,
   Plus,
   Search,
   Trash2,
   Edit2,
   X,
-  Check,
-  ImageIcon,
-  Wrench,
-  ToggleLeft,
-  ToggleRight,
-  Filter,
   UploadCloud,
 } from 'lucide-react';
 import {
@@ -63,6 +56,7 @@ export default function AdminSettings() {
   const [formSpec3, setFormSpec3] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formIsAvailable, setFormIsAvailable] = useState(true);
+  const [formStock, setFormStock] = useState('3');
 
   // File Upload State & Drag Drop
   const fileInputRef = useRef(null);
@@ -119,6 +113,7 @@ export default function AdminSettings() {
     setFormName('');
     setFormCategory('drilling');
     setFormPrice('');
+    setFormStock('3');
     setFormImage('');
     setFormSpec1('');
     setFormSpec2('');
@@ -134,6 +129,7 @@ export default function AdminSettings() {
     setFormName(prod.name);
     setFormCategory(prod.category || 'drilling');
     setFormPrice(String(prod.rentalPrice || ''));
+    setFormStock(String(typeof prod.stock === 'number' ? prod.stock : 3));
     setFormImage(prod.image || '/images/tools/drill.jpg');
     setFormSpec1(prod.specs?.[0]?.label || '');
     setFormSpec2(prod.specs?.[1]?.label || '');
@@ -155,6 +151,7 @@ export default function AdminSettings() {
       alert('Please enter a valid daily rental price.');
       return;
     }
+    const stockNum = Math.max(0, parseInt(formStock, 10) || 1);
     if (!formImage) {
       alert('Please upload a photo for the tool.');
       return;
@@ -182,6 +179,7 @@ export default function AdminSettings() {
             category: formCategory,
             categoryName,
             rentalPrice: priceNum,
+            stock: stockNum,
             image: formImage || '/images/tools/drill.jpg',
             specs: specsArray,
             bullets: formDescription.trim() ? [formDescription.trim()] : p.bullets,
@@ -200,6 +198,7 @@ export default function AdminSettings() {
         categoryName,
         rentalPrice: priceNum,
         priceUnit: 'day',
+        stock: stockNum,
         image: formImage || '/images/tools/drill.jpg',
         specs: specsArray,
         tags: [categoryName],
@@ -456,6 +455,10 @@ export default function AdminSettings() {
                           ₹{prod.rentalPrice}/day
                         </span>
                         <span className="text-stone-300">·</span>
+                        <span className="font-semibold text-stone-700 bg-stone-100 px-1.5 py-0.2 rounded border border-stone-200">
+                          {typeof prod.stock === 'number' ? `${prod.stock} in stock` : 'In Stock'}
+                        </span>
+                        <span className="text-stone-300">·</span>
                         <span className="truncate max-w-xs text-stone-500">
                           {prod.specs?.map((s) => s.label).join(' · ') || 'Heavy Duty'}
                         </span>
@@ -480,7 +483,13 @@ export default function AdminSettings() {
                             prod.isAvailable !== false ? 'bg-emerald-500' : 'bg-stone-400'
                           }`}
                         />
-                        <span>{prod.isAvailable !== false ? 'In Stock' : 'Out of Stock'}</span>
+                        <span>
+                          {prod.isAvailable !== false
+                            ? typeof prod.stock === 'number'
+                              ? `${prod.stock} in stock`
+                              : 'In Stock'
+                            : 'Out of Stock'}
+                        </span>
                       </button>
 
                       {/* Edit Button */}
@@ -743,8 +752,8 @@ export default function AdminSettings() {
                 />
               </div>
 
-              {/* Category & Daily Price Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Category, Daily Price & Stock Units Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="text-xs font-bold text-stone-700 block mb-1">
                     Category *
@@ -764,7 +773,7 @@ export default function AdminSettings() {
 
                 <div>
                   <label className="text-xs font-bold text-stone-700 block mb-1">
-                    Daily Rental Rate (₹/day) *
+                    Daily Rate (₹/day) *
                   </label>
                   <input
                     type="number"
@@ -773,6 +782,22 @@ export default function AdminSettings() {
                     value={formPrice}
                     onChange={(e) => setFormPrice(e.target.value)}
                     placeholder="e.g. 350"
+                    className="w-full px-3 py-2 text-xs sm:text-sm bg-stone-50 focus:bg-white border border-stone-300 rounded-lg focus:border-stone-900 outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-stone-700 block mb-1">
+                    Stock Quantity *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0"
+                    max="100"
+                    value={formStock}
+                    onChange={(e) => setFormStock(e.target.value)}
+                    placeholder="e.g. 3"
                     className="w-full px-3 py-2 text-xs sm:text-sm bg-stone-50 focus:bg-white border border-stone-300 rounded-lg focus:border-stone-900 outline-none transition-colors"
                   />
                 </div>

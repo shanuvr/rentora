@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import CustomerLayout from './layouts/CustomerLayout';
 import Products from './pages/customer/Products';
@@ -10,9 +9,11 @@ import Profile from './pages/customer/Profile';
 import AdminLayout from './layouts/AdminLayout';
 import AdminBookings from './pages/admin/Bookings';
 import AdminUndelivered from './pages/admin/Undelivered';
+import AdminETR from './pages/admin/ETR';
 import AdminBilling from './pages/admin/Billing';
 import AdminAccounts from './pages/admin/Accounts';
 import AdminSettings from './pages/admin/Settings';
+import AdminBookingHistory from './pages/admin/BookingHistory';
 
 export default function App() {
   return (
@@ -31,6 +32,10 @@ export default function App() {
           {/* Default landing page is Bookings as requested */}
           <Route index element={<AdminBookings />} />
           <Route path="bookings" element={<Navigate to="/admin" replace />} />
+          <Route path="etr" element={<AdminETR />} />
+          <Route path="returns" element={<Navigate to="/admin/etr" replace />} />
+          <Route path="history" element={<AdminBookingHistory />} />
+          <Route path="customers" element={<Navigate to="/admin/history" replace />} />
           <Route path="undelivered" element={<AdminUndelivered />} />
           <Route path="billing" element={<AdminBilling />} />
           <Route path="accounts" element={<AdminAccounts />} />

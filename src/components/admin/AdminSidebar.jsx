@@ -1,7 +1,8 @@
-import React from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import {
   CalendarCheck,
+  RotateCcw,
+  History,
   PackageX,
   Receipt,
   Wallet,
@@ -15,6 +16,7 @@ export function AdminSidebar({
   onCloseMobile,
   bookingsCount = 0,
   undeliveredCount = 0,
+  etrDueCount = 0,
 }) {
   const navigate = useNavigate();
 
@@ -30,6 +32,23 @@ export function AdminSidebar({
       icon: CalendarCheck,
       end: true,
       badge: bookingsCount > 0 ? bookingsCount : null,
+    },
+    {
+      to: '/admin/etr',
+      label: 'ETR Returns',
+      sublabel: 'Expected time to return',
+      icon: RotateCcw,
+      end: false,
+      badge: etrDueCount > 0 ? `${etrDueCount} Due` : null,
+      badgeColor: 'bg-amber-100 text-amber-800 border-amber-200',
+    },
+    {
+      to: '/admin/history',
+      label: 'Booking History',
+      sublabel: 'Customer rental records',
+      icon: History,
+      end: false,
+      badge: null,
     },
     {
       to: '/admin/undelivered',

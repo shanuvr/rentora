@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { X, Calendar, ShieldCheck, Clock, Check, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { X, Calendar, Plus } from 'lucide-react';
 
 // Format Date to YYYY-MM-DD for <input type="date">
 const toInputDate = (date) => {
@@ -51,9 +51,11 @@ export default function RentalDateModal({
   const [toDate, setToDate] = useState(tomorrow);
   const [selectedDurationPreset, setSelectedDurationPreset] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [prevProductKey, setPrevProductKey] = useState(null);
 
-  // Reset dates whenever a new product is selected
-  useEffect(() => {
+  const currentKey = isOpen && product ? `${product.id}-${isOpen}` : null;
+  if (currentKey !== prevProductKey) {
+    setPrevProductKey(currentKey);
     if (product) {
       const curToday = toInputDate(new Date());
       setFromDate(curToday);
@@ -61,7 +63,7 @@ export default function RentalDateModal({
       setSelectedDurationPreset(1);
       setIsSubmitting(false);
     }
-  }, [product, isOpen]);
+  }
 
   if (!isOpen || !product) return null;
 
@@ -96,28 +98,34 @@ export default function RentalDateModal({
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    const configuredItem = {
-      cartItemId: `${product.id}-${Date.now()}`,
-      id: product.id,
-      name: product.name,
-      image: product.image,
-      category: product.category,
-      categoryName: product.categoryName,
-      rentalPrice: product.rentalPrice,
-      priceUnit: product.priceUnit || 'day',
-      fromDate,
-      toDate,
-      formattedFrom: formatReadableDate(fromDate),
-      formattedTo: formatReadableDate(toDate),
-      rentalDays,
-      subtotal: rentalSubtotal,
-      deposit: 0,
-      totalAmount,
-    };
-
-    // Save to localStorage with duplicate prevention
     try {
       const currentCart = JSON.parse(localStorage.getItem('rentora_cart') || '[]');
+      const existingItem = currentCart.find((item) => item.id === product.id);
+      const quantity = existingItem && existingItem.quantity > 0 ? existingItem.quantity : 1;
+      const calculatedSubtotal = rentalSubtotal * quantity;
+
+      const configuredItem = {
+        cartItemId: existingItem?.cartItemId || `${product.id}-${Date.now()}`,
+        id: product.id,
+        name: product.name,
+        image: product.image,
+        category: product.category,
+        categoryName: product.categoryName,
+        rentalPrice: product.rentalPrice,
+        priceUnit: product.priceUnit || 'day',
+        fromDate,
+        toDate,
+        formattedFrom: formatReadableDate(fromDate),
+        formattedTo: formatReadableDate(toDate),
+        rentalDays,
+        stock: product.stock ?? 3,
+        quantity,
+        subtotal: calculatedSubtotal,
+        deposit: 0,
+        totalAmount: calculatedSubtotal,
+      };
+
+      // Save to localStorage with duplicate prevention
       const existingIndex = currentCart.findIndex((item) => item.id === product.id);
       let updatedCart;
       if (existingIndex >= 0) {
@@ -130,12 +138,12 @@ export default function RentalDateModal({
       }
       localStorage.setItem('rentora_cart', JSON.stringify(updatedCart));
       window.dispatchEvent(new Event('rentora_cart_updated'));
+
+      if (onConfirmAdd) {
+        onConfirmAdd(configuredItem);
+      }
     } catch {
       // Fallback
-    }
-
-    if (onConfirmAdd) {
-      onConfirmAdd(configuredItem);
     }
 
     onClose();

@@ -1,24 +1,61 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { PackageOpen, CheckCircle2 } from 'lucide-react';
-import { useOutletContext, Link } from 'react-router-dom';
+import { useOutletContext, Link, useNavigate } from 'react-router-dom';
 import TopNav from '../../components/customer/TopNav';
 import ProductCard from '../../components/common/ProductCard';
 import RentalDateModal from '../../components/customer/RentalDateModal';
 import { getStoredProducts } from '../../data/products';
 
 export default function Products() {
+  const navigate = useNavigate();
   const { selectedLang, openLanguageModal } = useOutletContext() || {};
   const [productsList, setProductsList] = useState(getStoredProducts);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
+  // Track product IDs that are currently in the cart
+  const [cartProductIds, setCartProductIds] = useState(() => {
+    try {
+      const stored = localStorage.getItem('rentora_cart');
+      if (stored) {
+        const items = JSON.parse(stored);
+        if (Array.isArray(items)) {
+          return new Set(items.map((i) => i.id).filter(Boolean));
+        }
+      }
+      return new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
   useEffect(() => {
     const handleUpdate = () => setProductsList(getStoredProducts());
+    const handleCartSync = () => {
+      try {
+        const stored = localStorage.getItem('rentora_cart');
+        if (stored) {
+          const items = JSON.parse(stored);
+          if (Array.isArray(items)) {
+            setCartProductIds(new Set(items.map((i) => i.id).filter(Boolean)));
+            return;
+          }
+        }
+        setCartProductIds(new Set());
+      } catch {
+        setCartProductIds(new Set());
+      }
+    };
+
     window.addEventListener('rentora_products_updated', handleUpdate);
+    window.addEventListener('rentora_cart_updated', handleCartSync);
     window.addEventListener('storage', handleUpdate);
+    window.addEventListener('storage', handleCartSync);
     return () => {
       window.removeEventListener('rentora_products_updated', handleUpdate);
+      window.removeEventListener('rentora_cart_updated', handleCartSync);
       window.removeEventListener('storage', handleUpdate);
+      window.removeEventListener('storage', handleCartSync);
     };
   }, []);
 
@@ -54,7 +91,7 @@ export default function Products() {
     }
 
     return result;
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, productsList]);
 
   // Open the Rental Date Modal on Add
   const handleAddToCart = (product) => {
@@ -95,8 +132,10 @@ export default function Products() {
               <ProductCard
                 key={product.id}
                 product={product}
+                isInCart={cartProductIds.has(product.id)}
                 onAddToCart={handleAddToCart}
                 onSelect={handleAddToCart}
+                onViewCart={() => navigate('/cart')}
               />
             ))}
           </div>

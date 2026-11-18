@@ -1,18 +1,15 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import {
   CalendarCheck,
   CheckCircle2,
-  Clock,
   Search,
-  Filter,
   X,
-  User,
   Calendar,
   RotateCcw,
   PackageCheck,
   ChevronDown,
 } from 'lucide-react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, Link } from 'react-router-dom';
 import { CATEGORIES } from '../../data/products';
 
 // Helper to format Date to YYYY-MM-DD
@@ -161,31 +158,43 @@ export default function AdminBookings() {
             )}
           </div>
 
-          {/* Category Dropdown */}
-          <div className="relative">
-            <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              className="pl-3 pr-7 py-1.5 bg-white text-xs text-stone-700 font-medium rounded-lg border border-stone-300 focus:border-stone-900 outline-none transition-colors cursor-pointer appearance-none shadow-2xs"
-            >
-              <option value="all">All Categories</option>
-              {CATEGORIES.filter((c) => c.id !== 'all').map((cat) => (
-                <option key={cat.id} value={cat.id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="w-3 h-3 text-stone-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          </div>
+          {/* Category Dropdown & Date Picker (Grid on mobile, inline on desktop) */}
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 w-full sm:w-auto">
+            {/* Category Dropdown */}
+            <div className="relative">
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="w-full pl-3 pr-7 py-1.5 bg-white text-xs text-stone-700 font-medium rounded-lg border border-stone-300 focus:border-stone-900 outline-none transition-colors cursor-pointer appearance-none shadow-2xs"
+              >
+                <option value="all">All Categories</option>
+                {CATEGORIES.filter((c) => c.id !== 'all').map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-3 h-3 text-stone-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+            </div>
 
-          {/* Date Picker */}
-          <input
-            type="date"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="px-2.5 py-1.5 bg-white text-xs text-stone-700 font-medium rounded-lg border border-stone-300 focus:border-stone-900 outline-none transition-colors cursor-pointer shadow-2xs"
-            title="Filter by rental date"
-          />
+            {/* Date Picker with Clear Visible Label */}
+            <div className="relative">
+              <label className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white text-xs text-stone-700 font-medium rounded-lg border border-stone-300 hover:border-stone-400 focus-within:border-stone-900 transition-colors cursor-pointer shadow-2xs">
+                <Calendar className="w-3.5 h-3.5 text-stone-400 shrink-0" />
+                <span className="truncate">
+                  {dateFilter ? formatCompactDate(dateFilter) : 'Pick Date'}
+                </span>
+                <input
+                  type="date"
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                  title="Filter by rental date"
+                />
+                <ChevronDown className="w-3 h-3 text-stone-400 shrink-0 ml-auto" />
+              </label>
+            </div>
+          </div>
         </div>
 
         {/* Date Presets & Reset Filter */}
@@ -259,10 +268,16 @@ export default function AdminBookings() {
                       {formatCompactDate(booking.createdAt)}
                     </span>
                     <span className="text-stone-300">·</span>
-                    <span className="text-stone-600 font-medium">
-                      {booking.customer?.name || 'Rahul Sharma'}
-                      {booking.customer?.phone ? ` (${booking.customer.phone})` : ''}
-                    </span>
+                    <Link
+                      to={`/admin/history?customer=${encodeURIComponent(booking.customer?.name || 'Rahul Sharma')}`}
+                      className="text-stone-700 hover:text-amber-800 font-medium hover:underline inline-flex items-center gap-1 transition-colors"
+                      title="View complete customer rental history"
+                    >
+                      <span>{booking.customer?.name || 'Rahul Sharma'}</span>
+                      {booking.customer?.phone ? (
+                        <span className="text-stone-400 font-normal">({booking.customer.phone})</span>
+                      ) : null}
+                    </Link>
                   </div>
 
                   {/* Status Badge */}
@@ -311,6 +326,11 @@ export default function AdminBookings() {
                         <div className="flex-1 min-w-0">
                           <h4 className="text-xs sm:text-sm font-bold text-stone-900 truncate">
                             {item.name}
+                            {item.quantity > 1 && (
+                              <span className="ml-1.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-stone-100 text-stone-800 border border-stone-200">
+                                ×{item.quantity}
+                              </span>
+                            )}
                           </h4>
 
                           <div className="flex items-center gap-2 mt-0.5 text-[11px] text-stone-500 flex-wrap">
@@ -326,6 +346,14 @@ export default function AdminBookings() {
                             <span className="text-stone-400">
                               ₹{item.rentalPrice}/day
                             </span>
+                            {item.quantity > 1 && (
+                              <>
+                                <span className="text-stone-300">·</span>
+                                <span className="font-semibold text-stone-700">
+                                  Qty: {item.quantity}
+                                </span>
+                              </>
+                            )}
                           </div>
                         </div>
 
