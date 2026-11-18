@@ -1,14 +1,19 @@
 import React, { useState, useMemo } from 'react';
-import { PackageOpen } from 'lucide-react';
-import { useOutletContext } from 'react-router-dom';
+import { PackageOpen, CheckCircle2 } from 'lucide-react';
+import { useOutletContext, Link } from 'react-router-dom';
 import TopNav from '../../components/customer/TopNav';
 import ProductCard from '../../components/common/ProductCard';
+import RentalDateModal from '../../components/customer/RentalDateModal';
 import { DUMMY_PRODUCTS } from '../../data/products';
 
 export default function Products() {
   const { selectedLang, openLanguageModal } = useOutletContext() || {};
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+
+  // Modal State for Screen 3
+  const [selectedProductForModal, setSelectedProductForModal] = useState(null);
+  const [toastMessage, setToastMessage] = useState(null);
 
   const handleResetFilters = () => {
     setSelectedCategory('all');
@@ -40,12 +45,21 @@ export default function Products() {
     return result;
   }, [searchQuery, selectedCategory]);
 
+  // Open the Rental Date Modal on Add
   const handleAddToCart = (product) => {
-    alert(`Rental date selection for "${product.name}" will open in Screen 3.`);
+    setSelectedProductForModal(product);
+  };
+
+  // Called when item is successfully configured and added to cart
+  const handleConfirmAddToCart = (configuredItem) => {
+    setToastMessage(`"${configuredItem.name}" added for ${configuredItem.rentalDays} ${configuredItem.rentalDays === 1 ? 'day' : 'days'}`);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3500);
   };
 
   return (
-    <div className="flex flex-col min-h-full">
+    <div className="flex flex-col min-h-full relative">
       <TopNav
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -71,6 +85,7 @@ export default function Products() {
                 key={product.id}
                 product={product}
                 onAddToCart={handleAddToCart}
+                onSelect={handleAddToCart}
               />
             ))}
           </div>
@@ -95,6 +110,28 @@ export default function Products() {
           </div>
         )}
       </div>
+
+      {/* Screen 3: Rental Date Selection Modal */}
+      <RentalDateModal
+        isOpen={Boolean(selectedProductForModal)}
+        onClose={() => setSelectedProductForModal(null)}
+        product={selectedProductForModal}
+        onConfirmAdd={handleConfirmAddToCart}
+      />
+
+      {/* Toast Notification when added */}
+      {toastMessage && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 bg-stone-900 text-white px-4 py-2.5 rounded-xl shadow-lg border border-stone-700 flex items-center gap-2.5 text-xs max-w-sm w-full mx-auto animate-in fade-in slide-in-from-bottom-2 duration-150">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+          <span className="truncate flex-1 font-medium">{toastMessage}</span>
+          <Link
+            to="/cart"
+            className="font-bold underline text-amber-400 hover:text-amber-300 shrink-0"
+          >
+            View Cart
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

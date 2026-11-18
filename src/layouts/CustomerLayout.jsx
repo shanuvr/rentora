@@ -15,10 +15,13 @@ export default function CustomerLayout() {
       const stored = localStorage.getItem('rentora_cart');
       if (stored) {
         const items = JSON.parse(stored);
-        setCartCount(Array.isArray(items) ? items.length : 0);
-      } else {
-        setCartCount(0);
+        if (Array.isArray(items)) {
+          const uniqueIds = new Set(items.map((i) => i.id).filter(Boolean));
+          setCartCount(uniqueIds.size);
+          return;
+        }
       }
+      setCartCount(0);
     } catch {
       setCartCount(0);
     }
