@@ -239,3 +239,25 @@ export const DUMMY_PRODUCTS = [
     expectedAvailability: null,
   },
 ];
+
+// Helper to get products from localStorage or fall back to DUMMY_PRODUCTS
+export const getStoredProducts = () => {
+  try {
+    const stored = localStorage.getItem('rentora_products');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch {}
+  return DUMMY_PRODUCTS;
+};
+
+// Helper to save products to localStorage and notify across tabs/windows
+export const saveStoredProducts = (products) => {
+  try {
+    localStorage.setItem('rentora_products', JSON.stringify(products));
+    window.dispatchEvent(new Event('rentora_products_updated'));
+  } catch {}
+};

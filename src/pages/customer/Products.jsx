@@ -1,15 +1,26 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { PackageOpen, CheckCircle2 } from 'lucide-react';
 import { useOutletContext, Link } from 'react-router-dom';
 import TopNav from '../../components/customer/TopNav';
 import ProductCard from '../../components/common/ProductCard';
 import RentalDateModal from '../../components/customer/RentalDateModal';
-import { DUMMY_PRODUCTS } from '../../data/products';
+import { getStoredProducts } from '../../data/products';
 
 export default function Products() {
   const { selectedLang, openLanguageModal } = useOutletContext() || {};
+  const [productsList, setProductsList] = useState(getStoredProducts);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+
+  useEffect(() => {
+    const handleUpdate = () => setProductsList(getStoredProducts());
+    window.addEventListener('rentora_products_updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+    return () => {
+      window.removeEventListener('rentora_products_updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
+  }, []);
 
   // Modal State for Screen 3
   const [selectedProductForModal, setSelectedProductForModal] = useState(null);
@@ -25,7 +36,7 @@ export default function Products() {
   }, [selectedCategory, searchQuery]);
 
   const filteredProducts = useMemo(() => {
-    let result = [...DUMMY_PRODUCTS];
+    let result = [...productsList];
 
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
