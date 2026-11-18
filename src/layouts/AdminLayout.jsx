@@ -9,7 +9,7 @@ const getInitialBookings = () => {
     const stored = localStorage.getItem('rentora_bookings');
     if (stored) {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(parsed) && parsed.length >= 8 && parsed.some((b) => b.customer?.name === 'Priya Patel')) {
         return parsed.map((b) => {
           const subtotal =
             b.items?.reduce(
@@ -52,19 +52,31 @@ const getInitialBookings = () => {
       });
     const toISO = (d) => d.toISOString().split('T')[0];
 
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
+    const daysAgo = (n) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - n);
+      return d;
+    };
+    const daysAhead = (n) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() + n);
+      return d;
+    };
 
-    const twoDaysAgo = new Date(today);
-    twoDaysAgo.setDate(today.getDate() - 2);
+    const yesterday = daysAgo(1);
+    const twoDaysAgo = daysAgo(2);
+    const fourDaysAgo = daysAgo(4);
+    const sixDaysAgo = daysAgo(6);
+    const eightDaysAgo = daysAgo(8);
+    const tenDaysAgo = daysAgo(10);
+    const twelveDaysAgo = daysAgo(12);
+    const thirteenDaysAgo = daysAgo(13);
 
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-
-    const dayAfter = new Date(today);
-    dayAfter.setDate(today.getDate() + 2);
+    const tomorrow = daysAhead(1);
+    const dayAfter = daysAhead(2);
 
     const seedData = [
+      // --- PERSON 1: Rahul Sharma (3 Bookings, 3 Products, ₹1,600) ---
       {
         bookingId: 'BK-130951',
         txnId: 'TXN-849102',
@@ -74,7 +86,7 @@ const getInitialBookings = () => {
         customer: {
           name: 'Rahul Sharma',
           phone: '+91 98765 43210',
-          location: 'Main Hub',
+          location: 'Indiranagar, Bangalore',
         },
         items: [
           {
@@ -101,6 +113,174 @@ const getInitialBookings = () => {
         totalAmount: 300,
       },
       {
+        bookingId: 'BK-108241',
+        txnId: 'TXN-719203',
+        createdAt: fourDaysAgo.toISOString(),
+        status: 'Returned',
+        pickupStatus: 'collected',
+        customer: {
+          name: 'Rahul Sharma',
+          phone: '+91 98765 43210',
+          location: 'Indiranagar, Bangalore',
+        },
+        items: [
+          {
+            id: 'tool-002',
+            name: '7-Inch Wood Circular Saw (1400W)',
+            category: 'cutting',
+            categoryName: 'Wood & Metal Saws',
+            image: '/images/tools/wood_saw.jpg',
+            rentalPrice: 400,
+            priceUnit: 'day',
+            stock: 6,
+            quantity: 1,
+            fromDate: toISO(fourDaysAgo),
+            toDate: toISO(twoDaysAgo),
+            formattedFrom: formatSeedDate(fourDaysAgo),
+            formattedTo: formatSeedDate(twoDaysAgo),
+            rentalDays: 2,
+            returnStatus: 'returned',
+            returnedAt: twoDaysAgo.toISOString(),
+            subtotal: 800,
+            totalAmount: 800,
+          },
+        ],
+        subtotal: 800,
+        depositAmount: 0,
+        totalAmount: 800,
+      },
+      {
+        bookingId: 'BK-102914',
+        txnId: 'TXN-593021',
+        createdAt: tenDaysAgo.toISOString(),
+        status: 'Returned',
+        pickupStatus: 'collected',
+        customer: {
+          name: 'Rahul Sharma',
+          phone: '+91 98765 43210',
+          location: 'Indiranagar, Bangalore',
+        },
+        items: [
+          {
+            id: 'tool-001',
+            name: 'Electric Impact Hammer Drill (13mm)',
+            category: 'drilling',
+            categoryName: 'Drills & Breakers',
+            image: '/images/tools/drill.jpg',
+            rentalPrice: 250,
+            priceUnit: 'day',
+            stock: 4,
+            quantity: 1,
+            fromDate: toISO(tenDaysAgo),
+            toDate: toISO(eightDaysAgo),
+            formattedFrom: formatSeedDate(tenDaysAgo),
+            formattedTo: formatSeedDate(eightDaysAgo),
+            rentalDays: 2,
+            returnStatus: 'returned',
+            returnedAt: eightDaysAgo.toISOString(),
+            subtotal: 500,
+            totalAmount: 500,
+          },
+        ],
+        subtotal: 500,
+        depositAmount: 0,
+        totalAmount: 500,
+      },
+
+      // --- PERSON 2: Priya Patel (2 Bookings, 3 Products, ₹1,300) ---
+      {
+        bookingId: 'BK-245190',
+        txnId: 'TXN-902841',
+        createdAt: yesterday.toISOString(),
+        status: 'Handed Over',
+        pickupStatus: 'collected',
+        customer: {
+          name: 'Priya Patel',
+          phone: '+91 98230 45678',
+          location: 'Koramangala, Bangalore',
+        },
+        items: [
+          {
+            id: 'tool-004',
+            name: 'Heavy Duty Wheelbarrow (Arbana)',
+            category: 'site',
+            categoryName: 'Site Gear & Arbana',
+            image: '/images/tools/wheelbarrow.jpg',
+            rentalPrice: 150,
+            priceUnit: 'day',
+            stock: 6,
+            quantity: 1,
+            fromDate: toISO(yesterday),
+            toDate: toISO(tomorrow),
+            formattedFrom: formatSeedDate(yesterday),
+            formattedTo: formatSeedDate(tomorrow),
+            rentalDays: 2,
+            subtotal: 300,
+            totalAmount: 300,
+          },
+          {
+            id: 'tool-007',
+            name: 'Folding Aluminium Step Ladder (10ft)',
+            category: 'ladders',
+            categoryName: 'Ladders & Scaffolding',
+            image: '/images/tools/ladder.jpg',
+            rentalPrice: 200,
+            priceUnit: 'day',
+            stock: 2,
+            quantity: 1,
+            fromDate: toISO(yesterday),
+            toDate: toISO(tomorrow),
+            formattedFrom: formatSeedDate(yesterday),
+            formattedTo: formatSeedDate(tomorrow),
+            rentalDays: 2,
+            subtotal: 400,
+            totalAmount: 400,
+          },
+        ],
+        subtotal: 700,
+        depositAmount: 0,
+        totalAmount: 700,
+      },
+      {
+        bookingId: 'BK-209841',
+        txnId: 'TXN-419082',
+        createdAt: eightDaysAgo.toISOString(),
+        status: 'Returned',
+        pickupStatus: 'collected',
+        customer: {
+          name: 'Priya Patel',
+          phone: '+91 98230 45678',
+          location: 'Koramangala, Bangalore',
+        },
+        items: [
+          {
+            id: 'tool-006',
+            name: 'Heavy Duty Marble & Tile Cutter Machine (110mm)',
+            category: 'cutting',
+            categoryName: 'Wood & Metal Saws',
+            image: '/images/tools/marble_cutter.jpg',
+            rentalPrice: 300,
+            priceUnit: 'day',
+            stock: 5,
+            quantity: 1,
+            fromDate: toISO(eightDaysAgo),
+            toDate: toISO(sixDaysAgo),
+            formattedFrom: formatSeedDate(eightDaysAgo),
+            formattedTo: formatSeedDate(sixDaysAgo),
+            rentalDays: 2,
+            returnStatus: 'returned',
+            returnedAt: sixDaysAgo.toISOString(),
+            subtotal: 600,
+            totalAmount: 600,
+          },
+        ],
+        subtotal: 600,
+        depositAmount: 0,
+        totalAmount: 600,
+      },
+
+      // --- PERSON 3: Arun Kumar (2 Bookings, 3 Products, ₹1,700) ---
+      {
         bookingId: 'BK-618420',
         txnId: 'TXN-912834',
         createdAt: today.toISOString(),
@@ -109,7 +289,7 @@ const getInitialBookings = () => {
         customer: {
           name: 'Arun Kumar',
           phone: '+91 97421 88320',
-          location: 'Main Hub',
+          location: 'Whitefield, Bangalore',
         },
         items: [
           {
@@ -154,15 +334,54 @@ const getInitialBookings = () => {
         totalAmount: 800,
       },
       {
+        bookingId: 'BK-603192',
+        txnId: 'TXN-658201',
+        createdAt: sixDaysAgo.toISOString(),
+        status: 'Returned',
+        pickupStatus: 'collected',
+        customer: {
+          name: 'Arun Kumar',
+          phone: '+91 97421 88320',
+          location: 'Whitefield, Bangalore',
+        },
+        items: [
+          {
+            id: 'tool-009',
+            name: 'Portable Inverter Arc Welding Set',
+            category: 'welding',
+            categoryName: 'Welding Sets',
+            image: '/images/tools/welder.jpg',
+            rentalPrice: 450,
+            priceUnit: 'day',
+            stock: 1,
+            quantity: 1,
+            fromDate: toISO(sixDaysAgo),
+            toDate: toISO(fourDaysAgo),
+            formattedFrom: formatSeedDate(sixDaysAgo),
+            formattedTo: formatSeedDate(fourDaysAgo),
+            rentalDays: 2,
+            returnStatus: 'returned',
+            returnedAt: fourDaysAgo.toISOString(),
+            subtotal: 900,
+            totalAmount: 900,
+          },
+        ],
+        subtotal: 900,
+        depositAmount: 0,
+        totalAmount: 900,
+      },
+
+      // --- PERSON 4: Suresh Nair (2 Bookings, 2 Products, ₹700) ---
+      {
         bookingId: 'BK-492715',
         txnId: 'TXN-581940',
-        createdAt: new Date(today.getTime() - 86400000).toISOString(),
+        createdAt: yesterday.toISOString(),
         status: 'Handed Over',
         pickupStatus: 'collected',
         customer: {
           name: 'Suresh Nair',
           phone: '+91 98450 11293',
-          location: 'Main Hub',
+          location: 'Jayanagar, Bangalore',
         },
         items: [
           {
@@ -189,39 +408,41 @@ const getInitialBookings = () => {
         totalAmount: 400,
       },
       {
-        bookingId: 'BK-304812',
-        txnId: 'TXN-391054',
-        createdAt: new Date(today.getTime() - 172800000).toISOString(),
-        status: 'Handed Over',
+        bookingId: 'BK-410982',
+        txnId: 'TXN-321094',
+        createdAt: thirteenDaysAgo.toISOString(),
+        status: 'Returned',
         pickupStatus: 'collected',
         customer: {
-          name: 'Rajesh Gowda',
-          phone: '+91 94480 32190',
-          location: 'Main Hub',
+          name: 'Suresh Nair',
+          phone: '+91 98450 11293',
+          location: 'Jayanagar, Bangalore',
         },
         items: [
           {
-            id: 'tool-009',
-            name: 'Portable Inverter Arc Welding Set',
-            category: 'welding',
-            categoryName: 'Welding Sets',
-            image: '/images/tools/welder.jpg',
-            rentalPrice: 450,
+            id: 'tool-003',
+            name: '4-Inch Angle Grinder Machine (850W)',
+            category: 'grinding',
+            categoryName: 'Grinders & Cutters',
+            image: '/images/tools/angle_grinder.jpg',
+            rentalPrice: 300,
             priceUnit: 'day',
-            stock: 1,
+            stock: 3,
             quantity: 1,
-            fromDate: toISO(twoDaysAgo),
-            toDate: toISO(yesterday),
-            formattedFrom: formatSeedDate(twoDaysAgo),
-            formattedTo: formatSeedDate(yesterday),
+            fromDate: toISO(thirteenDaysAgo),
+            toDate: toISO(twelveDaysAgo),
+            formattedFrom: formatSeedDate(thirteenDaysAgo),
+            formattedTo: formatSeedDate(twelveDaysAgo),
             rentalDays: 1,
-            subtotal: 450,
-            totalAmount: 450,
+            returnStatus: 'returned',
+            returnedAt: twelveDaysAgo.toISOString(),
+            subtotal: 300,
+            totalAmount: 300,
           },
         ],
-        subtotal: 450,
+        subtotal: 300,
         depositAmount: 0,
-        totalAmount: 450,
+        totalAmount: 300,
       },
     ];
 

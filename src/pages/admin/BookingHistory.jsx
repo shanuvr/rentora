@@ -1,11 +1,10 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import {
   History,
   Search,
   X,
   Phone,
   User,
-  Users,
   CheckCircle2,
   PackageCheck,
   Clock,
@@ -13,6 +12,7 @@ import {
   Receipt,
   Calendar,
   ChevronDown,
+  Sparkles,
 } from 'lucide-react';
 import { useOutletContext, useSearchParams, Link } from 'react-router-dom';
 
@@ -49,18 +49,9 @@ export default function AdminBookingHistory() {
   const { bookings = [] } = useOutletContext() || {};
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const initialCustomer = searchParams.get('customer') || 'all';
-  const [selectedCustomer, setSelectedCustomer] = useState(initialCustomer);
+  const selectedCustomer = searchParams.get('customer') || 'all';
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-
-  // Sync state if URL query changes
-  useEffect(() => {
-    const custParam = searchParams.get('customer');
-    if (custParam) {
-      setSelectedCustomer(custParam);
-    }
-  }, [searchParams]);
 
   // Aggregate customer statistics
   const customerDirectory = useMemo(() => {
@@ -70,7 +61,7 @@ export default function AdminBookingHistory() {
       const c = b.customer || {
         name: 'Rahul Sharma',
         phone: '+91 98765 43210',
-        location: 'Main Hub',
+        location: 'Indiranagar, Bangalore',
       };
       const key = c.name || 'Anonymous Customer';
 
@@ -80,6 +71,7 @@ export default function AdminBookingHistory() {
           phone: c.phone || '',
           location: c.location || '',
           bookingCount: 0,
+          productsRentedCount: 0,
           totalSpent: 0,
           activeCount: 0,
           returnedCount: 0,
@@ -91,6 +83,11 @@ export default function AdminBookingHistory() {
       entry.bookingCount += 1;
       entry.totalSpent += b.totalAmount || b.subtotal || 0;
       entry.bookings.push(b);
+
+      const items = b.items || [];
+      items.forEach((itm) => {
+        entry.productsRentedCount += itm.quantity || 1;
+      });
 
       const isDone = b.status === 'Returned' || b.status === 'Completed';
       if (isDone) {
@@ -108,6 +105,7 @@ export default function AdminBookingHistory() {
     let totalRevenue = 0;
     let completedBookings = 0;
     let activeBookings = 0;
+    let totalProductsRented = 0;
 
     bookings.forEach((b) => {
       totalRevenue += b.totalAmount || b.subtotal || 0;
@@ -116,11 +114,15 @@ export default function AdminBookingHistory() {
       } else {
         activeBookings += 1;
       }
+      (b.items || []).forEach((itm) => {
+        totalProductsRented += itm.quantity || 1;
+      });
     });
 
     return {
       totalBookings: bookings.length,
       uniqueCustomers: customerDirectory.length,
+      totalProductsRented,
       totalRevenue,
       completedBookings,
       activeBookings,
@@ -172,21 +174,21 @@ export default function AdminBookingHistory() {
 
   // Handle switching customer
   const handleSelectCustomer = (name) => {
-    setSelectedCustomer(name);
+    const next = new URLSearchParams(searchParams);
     if (name === 'all') {
-      searchParams.delete('customer');
-      setSearchParams(searchParams);
+      next.delete('customer');
     } else {
-      setSearchParams({ customer: name });
+      next.set('customer', name);
     }
+    setSearchParams(next);
   };
 
   const handleResetFilters = () => {
-    setSelectedCustomer('all');
     setSearchQuery('');
     setStatusFilter('all');
-    searchParams.delete('customer');
-    setSearchParams(searchParams);
+    const next = new URLSearchParams(searchParams);
+    next.delete('customer');
+    setSearchParams(next);
   };
 
   const hasActiveFilters =
@@ -205,7 +207,7 @@ export default function AdminBookingHistory() {
             Booking History
           </h1>
           <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-stone-900 text-amber-400 border border-stone-800">
-            Customer Records
+            User Rental Records
           </span>
         </div>
 
@@ -222,24 +224,24 @@ export default function AdminBookingHistory() {
         {/* Total Bookings */}
         <div className="bg-white rounded-lg border border-stone-200 p-1.5 sm:p-2 text-center shadow-2xs">
           <span className="text-[8.5px] sm:text-[10px] font-bold block uppercase tracking-wider text-stone-400 truncate">
-            Total Bookings
+            Bookings
           </span>
           <span className="text-sm sm:text-base font-black text-stone-900 tabular-nums leading-tight">
             {overallStats.totalBookings}
           </span>
         </div>
 
-        {/* Customers */}
+        {/* Total Products Rented */}
         <div className="bg-white rounded-lg border border-stone-200 p-1.5 sm:p-2 text-center shadow-2xs">
           <span className="text-[8.5px] sm:text-[10px] font-bold block uppercase tracking-wider text-stone-400 truncate">
-            Customers
+            Tools Rented
           </span>
           <span className="text-sm sm:text-base font-black text-stone-900 tabular-nums leading-tight">
-            {overallStats.uniqueCustomers}
+            {overallStats.totalProductsRented}
           </span>
         </div>
 
-        {/* Returned / Closed */}
+        {/* Completed / Returned */}
         <div className="bg-white border border-stone-200 rounded-lg p-1.5 sm:p-2 text-center shadow-2xs">
           <span className="text-[8.5px] sm:text-[10px] font-bold block uppercase tracking-wider text-emerald-700 truncate">
             Completed
@@ -249,7 +251,7 @@ export default function AdminBookingHistory() {
           </span>
         </div>
 
-        {/* Revenue */}
+        {/* Total Revenue */}
         <div className="bg-white border border-stone-200 rounded-lg p-1.5 sm:p-2 text-center shadow-2xs">
           <span className="text-[8.5px] sm:text-[10px] font-bold block uppercase tracking-wider text-amber-800 truncate">
             Revenue
@@ -260,83 +262,119 @@ export default function AdminBookingHistory() {
         </div>
       </div>
 
-      {/* Customer Quick Selector Strip */}
-      <div className="bg-white rounded-xl border border-stone-200 p-3 shadow-2xs space-y-2">
-        <div className="flex items-center justify-between text-xs">
-          <div className="flex items-center gap-1.5 font-bold text-stone-800">
-            <Users className="w-3.5 h-3.5 text-stone-500" />
-            <span>Select Customer to Inspect History:</span>
-          </div>
-          {selectedCustomer !== 'all' && (
+      {/* Filter & Search Toolbar */}
+      <div className="flex flex-col gap-2">
+        {/* Search Input */}
+        <div className="relative">
+          <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search products, tools, booking ID (#BK-...), or category..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-8 pr-7 py-2 bg-white text-xs text-stone-900 placeholder:text-stone-400 rounded-lg border border-stone-300 focus:border-stone-900 outline-none transition-colors shadow-2xs"
+          />
+          {searchQuery && (
             <button
               type="button"
-              onClick={() => handleSelectCustomer('all')}
-              className="text-[11px] font-bold text-amber-800 hover:text-amber-900 hover:underline cursor-pointer"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 p-0.5 rounded cursor-pointer"
             >
-              View All Customers
+              <X className="w-3 h-3" />
             </button>
           )}
         </div>
 
-        {/* Horizontal Scrollable Customer Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          {/* "All Customers" Pill */}
-          <button
-            type="button"
-            onClick={() => handleSelectCustomer('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer shadow-2xs ${
-              selectedCustomer === 'all'
-                ? 'bg-stone-900 text-white border border-stone-900'
-                : 'bg-stone-50 hover:bg-stone-100 text-stone-700 border border-stone-200'
-            }`}
-          >
-            <span>All ({overallStats.uniqueCustomers})</span>
-          </button>
-
-          {/* Individual Customers */}
-          {customerDirectory.map((cust) => {
-            const isSelected =
-              selectedCustomer.toLowerCase() === cust.name.toLowerCase();
-
-            return (
-              <button
-                key={cust.name}
-                type="button"
-                onClick={() => handleSelectCustomer(cust.name)}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all shrink-0 flex items-center gap-2 cursor-pointer shadow-2xs ${
-                  isSelected
-                    ? 'bg-amber-500 text-stone-950 border border-amber-600 font-bold ring-1 ring-amber-400'
-                    : 'bg-white hover:bg-stone-50 text-stone-800 border border-stone-200'
-                }`}
-              >
-                <span
-                  className={`w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black shrink-0 ${
-                    isSelected ? 'bg-stone-900 text-white' : 'bg-stone-100 text-stone-700'
-                  }`}
+        {/* 2 Dropdowns Grid: User Dropdown & Status Dropdown */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-center">
+          {/* User Selector Dropdown */}
+          <div className="relative">
+            <select
+              value={selectedCustomer}
+              onChange={(e) => handleSelectCustomer(e.target.value)}
+              className={`w-full pl-2.5 pr-7 py-2 text-xs font-semibold rounded-lg border outline-none transition-colors cursor-pointer appearance-none shadow-2xs truncate ${
+                selectedCustomer !== 'all'
+                  ? 'bg-stone-900 text-white border-stone-900 font-bold'
+                  : 'bg-white text-stone-800 border-stone-300 focus:border-stone-900'
+              }`}
+            >
+              <option value="all" className="bg-white text-stone-900">
+                All Users ({customerDirectory.length} users · {overallStats.totalProductsRented} tools rented)
+              </option>
+              {customerDirectory.map((cust) => (
+                <option
+                  key={cust.name}
+                  value={cust.name}
+                  className="bg-white text-stone-900"
                 >
-                  {getInitials(cust.name)}
-                </span>
-                <span className="truncate max-w-[120px] sm:max-w-none">{cust.name}</span>
-                <span
-                  className={`text-[10px] px-1.5 py-0.2 rounded font-bold ${
-                    isSelected
-                      ? 'bg-stone-900/10 text-stone-950'
-                      : 'bg-stone-100 text-stone-600'
-                  }`}
-                >
-                  {cust.bookingCount}
-                </span>
-              </button>
-            );
-          })}
+                  {cust.name} — {cust.bookingCount} bookings · {cust.productsRentedCount} {cust.productsRentedCount === 1 ? 'product' : 'products'} (₹{cust.totalSpent})
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              className={`w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${
+                selectedCustomer !== 'all' ? 'text-stone-300' : 'text-stone-400'
+              }`}
+            />
+          </div>
+
+          {/* Status Dropdown */}
+          <div className="relative">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className={`w-full pl-2.5 pr-7 py-2 text-xs font-semibold rounded-lg border outline-none transition-colors cursor-pointer appearance-none shadow-2xs truncate ${
+                statusFilter !== 'all'
+                  ? 'bg-stone-900 text-white border-stone-900 font-bold'
+                  : 'bg-white text-stone-700 border-stone-300 focus:border-stone-900'
+              }`}
+            >
+              <option value="all" className="bg-white text-stone-900">
+                All Rental Statuses
+              </option>
+              <option value="returned" className="bg-white text-stone-900">
+                Returned & Closed
+              </option>
+              <option value="in_use" className="bg-white text-stone-900">
+                In Customer Possession (Handed Over)
+              </option>
+              <option value="confirmed" className="bg-white text-stone-900">
+                Confirmed (Upcoming Pickup)
+              </option>
+            </select>
+            <ChevronDown
+              className={`w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none ${
+                statusFilter !== 'all' ? 'text-stone-300' : 'text-stone-400'
+              }`}
+            />
+          </div>
         </div>
+
+        {/* Reset Filter Pill */}
+        {hasActiveFilters && (
+          <div className="flex items-center justify-between text-xs pt-0.5 px-0.5">
+            <span className="text-[11px] text-stone-500 font-medium truncate">
+              Filtering: {selectedCustomer !== 'all' ? selectedCustomer : 'All Users'}
+              {statusFilter !== 'all' ? ` · ${statusFilter}` : ''}
+              {searchQuery ? ` · "${searchQuery}"` : ''}
+            </span>
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 px-2 py-0.5 rounded border border-amber-200 cursor-pointer transition-colors shrink-0"
+            >
+              <RotateCcw className="w-2.5 h-2.5" />
+              <span>Reset</span>
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Selected Customer Highlight Card (when a single person is selected) */}
+      {/* Selected User Overview Card */}
       {selectedCustomerData && (
         <div className="bg-gradient-to-r from-stone-900 to-stone-800 text-white rounded-xl p-3.5 sm:p-4 shadow-sm border border-stone-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-in fade-in duration-150">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-400 text-stone-950 font-black flex items-center justify-center text-sm shadow-xs shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-amber-400 text-stone-950 font-black flex items-center justify-center text-sm shadow-xs shrink-0">
               {getInitials(selectedCustomerData.name)}
             </div>
             <div>
@@ -345,7 +383,10 @@ export default function AdminBookingHistory() {
                   {selectedCustomerData.name}
                 </h3>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-stone-800 text-amber-400 border border-stone-700">
-                  {selectedCustomerData.bookingCount} {selectedCustomerData.bookingCount === 1 ? 'Rental' : 'Rentals'}
+                  {selectedCustomerData.bookingCount} {selectedCustomerData.bookingCount === 1 ? 'Booking' : 'Bookings'}
+                </span>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-stone-800 text-emerald-400 border border-stone-700">
+                  {selectedCustomerData.productsRentedCount} {selectedCustomerData.productsRentedCount === 1 ? 'Product Rented' : 'Products Rented'}
                 </span>
               </div>
               <div className="flex items-center gap-2 text-xs text-stone-300 mt-0.5 flex-wrap">
@@ -371,7 +412,7 @@ export default function AdminBookingHistory() {
           {/* Quick Metrics for this customer */}
           <div className="flex items-center gap-3 self-start sm:self-center bg-stone-950/40 px-3 py-1.5 rounded-lg border border-stone-700 text-xs">
             <div>
-              <span className="text-[9.5px] uppercase tracking-wider text-stone-400 block font-bold">
+              <span className="text-[9px] uppercase tracking-wider text-stone-400 block font-bold">
                 Lifetime Spend
               </span>
               <span className="text-sm font-black text-amber-400 tabular-nums">
@@ -380,84 +421,16 @@ export default function AdminBookingHistory() {
             </div>
             <div className="h-6 w-px bg-stone-700" />
             <div>
-              <span className="text-[9.5px] uppercase tracking-wider text-stone-400 block font-bold">
+              <span className="text-[9px] uppercase tracking-wider text-stone-400 block font-bold">
                 Active / Returned
               </span>
               <span className="text-xs font-bold text-stone-200">
-                {selectedCustomerData.activeCount} active · {selectedCustomerData.returnedCount} done
+                {selectedCustomerData.activeCount} active · {selectedCustomerData.returnedCount} returned
               </span>
             </div>
           </div>
         </div>
       )}
-
-      {/* Search & Status Filters */}
-      <div className="flex flex-col gap-2">
-        {/* Search Input */}
-        <div className="relative">
-          <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search by customer name, phone, booking ID (#BK-...), or tool..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-8 pr-7 py-1.5 bg-white text-xs text-stone-900 placeholder:text-stone-400 rounded-lg border border-stone-300 focus:border-stone-900 outline-none transition-colors shadow-2xs"
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={() => setSearchQuery('')}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-stone-400 hover:text-stone-700 p-0.5 rounded cursor-pointer"
-            >
-              <X className="w-3 h-3" />
-            </button>
-          )}
-        </div>
-
-        {/* Status Dropdown Toolbar */}
-        <div className="flex items-center justify-between gap-2">
-          <div className="relative w-full sm:w-60">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className={`w-full pl-2.5 pr-6 py-1.5 text-xs font-semibold rounded-lg border outline-none transition-colors cursor-pointer appearance-none shadow-2xs truncate ${
-                statusFilter !== 'all'
-                  ? 'bg-stone-900 text-white border-stone-900'
-                  : 'bg-white text-stone-700 border-stone-300 focus:border-stone-900'
-              }`}
-            >
-              <option value="all" className="bg-white text-stone-900">
-                All Statuses
-              </option>
-              <option value="returned" className="bg-white text-stone-900">
-                Returned & Completed
-              </option>
-              <option value="in_use" className="bg-white text-stone-900">
-                Handed Over (In Use)
-              </option>
-              <option value="confirmed" className="bg-white text-stone-900">
-                Confirmed (Upcoming)
-              </option>
-            </select>
-            <ChevronDown
-              className={`w-3 h-3 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none ${
-                statusFilter !== 'all' ? 'text-stone-300' : 'text-stone-400'
-              }`}
-            />
-          </div>
-
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={handleResetFilters}
-              className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 px-2.5 py-1.5 rounded-lg border border-amber-200 cursor-pointer transition-colors shrink-0 shadow-2xs"
-            >
-              <RotateCcw className="w-2.5 h-2.5" />
-              <span>Reset</span>
-            </button>
-          )}
-        </div>
-      </div>
 
       {/* Bookings History Timeline List */}
       <div className="space-y-3">
@@ -477,7 +450,7 @@ export default function AdminBookingHistory() {
                 key={booking.bookingId}
                 className="bg-white rounded-xl border border-stone-200 shadow-2xs hover:border-stone-300 transition-all overflow-hidden"
               >
-                {/* Header: ID, Date, Customer & Status */}
+                {/* Header: ID, Booked Date, Customer & Status */}
                 <div className="px-4 py-2.5 border-b border-stone-100 flex flex-wrap items-center justify-between gap-2 text-xs">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-stone-900">
@@ -490,16 +463,16 @@ export default function AdminBookingHistory() {
                     )}
                     <span className="text-stone-300">·</span>
                     <span className="text-stone-500 font-medium">
-                      {formatFullDate(booking.createdAt)}
+                      Booked: {formatFullDate(booking.createdAt)}
                     </span>
                     <span className="text-stone-300">·</span>
 
-                    {/* Customer Name button/chip */}
+                    {/* Customer Name */}
                     <button
                       type="button"
                       onClick={() => handleSelectCustomer(customer.name)}
                       className="font-bold text-stone-800 hover:text-amber-800 hover:underline cursor-pointer inline-flex items-center gap-1"
-                      title="Filter history to this customer"
+                      title="Filter history to this user"
                     >
                       <User className="w-3 h-3 text-stone-400" />
                       <span>{customer.name}</span>
@@ -540,7 +513,7 @@ export default function AdminBookingHistory() {
                   </div>
                 </div>
 
-                {/* Body: Items Rented */}
+                {/* Body: Items & Tools Rented */}
                 <div className="divide-y divide-stone-100">
                   {booking.items?.map((item, idx) => {
                     const fromStr = formatCompactDate(item.formattedFrom || item.fromDate);
@@ -548,6 +521,7 @@ export default function AdminBookingHistory() {
                     const days = item.rentalDays || 1;
                     const qty = item.quantity || 1;
                     const subtotal = item.subtotal || (item.rentalPrice || 0) * days * qty;
+                    const isItemReturned = item.returnStatus === 'returned' || isCompleted;
 
                     return (
                       <div
@@ -567,7 +541,7 @@ export default function AdminBookingHistory() {
                           />
                         </div>
 
-                        {/* Tool Info */}
+                        {/* Tool Details: Product Name, Rental Period, Returned Date */}
                         <div className="flex-1 min-w-0">
                           <h4 className="text-xs sm:text-sm font-bold text-stone-900 truncate">
                             {item.name}
@@ -577,23 +551,42 @@ export default function AdminBookingHistory() {
                               </span>
                             )}
                           </h4>
+
                           <div className="flex items-center gap-2 mt-1 text-[11px] text-stone-500 flex-wrap">
                             <span className="text-amber-800 font-medium">
                               {item.categoryName || 'Equipment'}
                             </span>
                             <span className="text-stone-300">·</span>
-                            <span className="inline-flex items-center gap-1">
+                            <span className="inline-flex items-center gap-1 font-medium text-stone-700">
                               <Calendar className="w-3 h-3 text-stone-400" />
                               <span>
                                 {fromStr} → {toStr} ({days} {days === 1 ? 'day' : 'days'})
                               </span>
                             </span>
-                            {item.returnStatus === 'returned' && (
+
+                            {/* Return Date Specifics */}
+                            {isItemReturned ? (
                               <>
                                 <span className="text-stone-300">·</span>
-                                <span className="text-emerald-700 font-bold inline-flex items-center gap-0.5">
+                                <span className="text-emerald-700 font-bold inline-flex items-center gap-0.5 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
                                   <CheckCircle2 className="w-2.5 h-2.5" />
-                                  <span>Returned</span>
+                                  <span>Returned: {formatCompactDate(item.returnedAt || item.toDate || toStr)}</span>
+                                </span>
+                              </>
+                            ) : isHandedOver ? (
+                              <>
+                                <span className="text-stone-300">·</span>
+                                <span className="text-blue-700 font-bold inline-flex items-center gap-0.5 bg-blue-50 px-1.5 py-0.2 rounded border border-blue-200">
+                                  <Clock className="w-2.5 h-2.5" />
+                                  <span>Due: {toStr}</span>
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <span className="text-stone-300">·</span>
+                                <span className="text-amber-800 font-semibold inline-flex items-center gap-0.5">
+                                  <Sparkles className="w-2.5 h-2.5 text-amber-500" />
+                                  <span>Pickup: {fromStr}</span>
                                 </span>
                               </>
                             )}
@@ -658,7 +651,7 @@ export default function AdminBookingHistory() {
             </h3>
             <p className="text-xs text-stone-400 max-w-sm mx-auto mb-4">
               {hasActiveFilters
-                ? 'Try resetting the search query or customer filter.'
+                ? 'Try resetting the search query or user filter.'
                 : 'There are currently no recorded bookings in the system.'}
             </p>
             {hasActiveFilters && (
