@@ -177,6 +177,31 @@ export default function Profile() {
             <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-stone-700 group-hover:translate-x-0.5 transition-all" />
           </div>
         </button>
+
+        {/* Switch to Owner Portal */}
+        <Link
+          to="/admin"
+          className="w-full bg-white rounded-xl p-3.5 sm:p-4 border border-stone-300 shadow-xs hover:border-stone-400 transition-all flex items-center justify-between text-left group"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-stone-900 text-white flex items-center justify-center font-bold text-xs shrink-0">
+              OP
+            </div>
+            <div>
+              <span className="text-xs sm:text-sm font-bold text-stone-900 block leading-tight">
+                Owner Portal (Admin)
+              </span>
+              <span className="text-[11px] text-stone-500 font-medium">
+                Manage hub bookings, undelivered, billing & revenue
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-stone-600 group-hover:text-stone-900">
+            <span className="text-[11px] text-stone-400">Open</span>
+            <ChevronRight className="w-4 h-4 text-stone-400 group-hover:text-stone-700 group-hover:translate-x-0.5 transition-all" />
+          </div>
+        </Link>
       </div>
 
       {/* Contact Details Card */}

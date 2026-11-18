@@ -86,11 +86,7 @@ export default function Cart() {
     (sum, item) => sum + (item.subtotal || 0),
     0
   );
-  const totalDeposit = cartItems.reduce(
-    (sum, item) => sum + (item.deposit || 0),
-    0
-  );
-  const grandTotal = rentalSubtotal + totalDeposit;
+  const grandTotal = rentalSubtotal;
 
   // Proceed to Book with Payment Simulation
   const handleProceedToPay = () => {
@@ -111,7 +107,7 @@ export default function Cart() {
         status: 'Confirmed',
         items: [...cartItems],
         subtotal: rentalSubtotal,
-        depositAmount: totalDeposit,
+        depositAmount: 0,
         totalAmount: grandTotal,
       };
 
@@ -258,25 +254,15 @@ export default function Cart() {
                   ₹{rentalSubtotal.toLocaleString('en-IN')}
                 </span>
               </div>
-
-              <div className="flex justify-between items-center">
-                <span className="flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  <span>Refundable Security Deposit</span>
-                </span>
-                <span className="font-medium text-stone-700 tabular-nums">
-                  ₹{totalDeposit.toLocaleString('en-IN')}
-                </span>
-              </div>
             </div>
 
             <div className="pt-2 border-t border-stone-200 flex justify-between items-baseline">
               <div>
                 <span className="text-sm font-bold text-stone-900 block">
-                  Total Payable at Pickup
+                  Total Payable
                 </span>
                 <span className="text-[10px] text-stone-400 font-medium">
-                  Deposit refunded on safe equipment return
+                  Instant confirmation for warehouse pickup
                 </span>
               </div>
               <span className="text-base sm:text-lg font-black text-stone-900 tabular-nums">

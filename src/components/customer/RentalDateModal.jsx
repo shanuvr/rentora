@@ -67,8 +67,7 @@ export default function RentalDateModal({
 
   const rentalDays = calculateDays(fromDate, toDate);
   const rentalSubtotal = product.rentalPrice * rentalDays;
-  const refundableDeposit = Math.round(product.rentalPrice * 0.5);
-  const totalAmount = rentalSubtotal + refundableDeposit;
+  const totalAmount = rentalSubtotal;
 
   // Handle Preset Clicks (1 Day, 3 Days, 7 Days)
   const handlePresetDuration = (days) => {
@@ -102,6 +101,7 @@ export default function RentalDateModal({
       id: product.id,
       name: product.name,
       image: product.image,
+      category: product.category,
       categoryName: product.categoryName,
       rentalPrice: product.rentalPrice,
       priceUnit: product.priceUnit || 'day',
@@ -111,7 +111,7 @@ export default function RentalDateModal({
       formattedTo: formatReadableDate(toDate),
       rentalDays,
       subtotal: rentalSubtotal,
-      deposit: refundableDeposit,
+      deposit: 0,
       totalAmount,
     };
 
@@ -266,19 +266,9 @@ export default function RentalDateModal({
             </span>
           </div>
 
-          <div className="flex items-center justify-between text-xs text-stone-600">
-            <span className="flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-stone-400" />
-              <span>Refundable Deposit</span>
-            </span>
-            <span className="font-medium text-stone-600">
-              ₹{refundableDeposit.toLocaleString('en-IN')}
-            </span>
-          </div>
-
           <div className="pt-2 border-t border-stone-200 flex items-center justify-between">
             <span className="text-xs font-bold text-stone-900">
-              Total Payable at Pickup
+              Total Payable
             </span>
             <span className="text-sm sm:text-base font-black text-stone-900">
               ₹{totalAmount.toLocaleString('en-IN')}
