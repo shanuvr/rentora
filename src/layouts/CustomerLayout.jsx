@@ -59,7 +59,7 @@ export default function CustomerLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900 flex flex-col font-sans selection:bg-amber-500 selection:text-white pb-20">
+    <div className="min-h-screen bg-stone-100/70 text-stone-900 flex flex-col font-sans selection:bg-amber-500 selection:text-white pb-20">
       <main className="flex-1 w-full max-w-4xl mx-auto flex flex-col">
         <Outlet
           context={{

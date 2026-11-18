@@ -65,7 +65,7 @@ export default function Products() {
         </p>
 
         {filteredProducts.length > 0 ? (
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-3 sm:gap-3.5 md:gap-4">
             {filteredProducts.map((product) => (
               <ProductCard
                 key={product.id}

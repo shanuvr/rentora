@@ -49,10 +49,10 @@ export default function ProductCard({ product, onAddToCart, onSelect }) {
   return (
     <div
       onClick={() => onSelect && onSelect(product)}
-      className="group bg-white rounded-xl overflow-hidden border border-stone-200/80 hover:border-stone-300 transition-all duration-150 flex flex-row cursor-pointer h-[154px] sm:h-[158px] md:h-[168px]"
+      className="group bg-white rounded-xl overflow-hidden border border-stone-300 shadow-xs hover:border-stone-400 hover:shadow-sm transition-all duration-150 flex flex-row cursor-pointer h-[154px] sm:h-[158px] md:h-[168px]"
     >
       {/* Left Column: Image */}
-      <div className="relative w-[112px] xs:w-[122px] sm:w-36 md:w-44 h-full bg-stone-100 shrink-0 overflow-hidden">
+      <div className="relative w-[112px] xs:w-[122px] sm:w-36 md:w-44 h-full bg-stone-100 shrink-0 overflow-hidden border-r border-stone-200">
         {!imgError ? (
           <img
             src={image}
