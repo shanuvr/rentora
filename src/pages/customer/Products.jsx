@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { PackageOpen } from 'lucide-react';
+import { useOutletContext } from 'react-router-dom';
 import TopNav from '../../components/customer/TopNav';
 import ProductCard from '../../components/common/ProductCard';
 import { DUMMY_PRODUCTS } from '../../data/products';
 
 export default function Products() {
+  const { selectedLang, openLanguageModal } = useOutletContext() || {};
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
 
@@ -52,6 +54,8 @@ export default function Products() {
         onSelectCategory={setSelectedCategory}
         onResetFilters={handleResetFilters}
         hasActiveFilters={hasActiveFilters}
+        selectedLang={selectedLang}
+        onOpenLangModal={openLanguageModal}
       />
 
       <div className="px-3 sm:px-4 py-3 flex-1 flex flex-col">

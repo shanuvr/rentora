@@ -65,7 +65,7 @@ export const DUMMY_PRODUCTS = [
     rentalPrice: 700,
     priceUnit: 'day',
     isAvailable: false,
-    expectedAvailability: '24 November 2026',
+    expectedAvailability: '24 Nov',
   },
   {
     id: 'tool-004',
@@ -122,7 +122,7 @@ export const DUMMY_PRODUCTS = [
     rentalPrice: 900,
     priceUnit: 'day',
     isAvailable: false,
-    expectedAvailability: '22 November 2026',
+    expectedAvailability: '22 Nov',
   },
   {
     id: 'tool-007',
@@ -198,7 +198,7 @@ export const DUMMY_PRODUCTS = [
     rentalPrice: 450,
     priceUnit: 'day',
     isAvailable: false,
-    expectedAvailability: '25 November 2026',
+    expectedAvailability: '25 Nov',
   },
   {
     id: 'tool-011',

@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, ChevronDown, RotateCcw, Search, X } from 'lucide-react';
+import { User, ChevronDown, RotateCcw, Search, X, Globe } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { CATEGORIES } from '../../data/products';
 
@@ -11,6 +11,8 @@ export default function TopNav({
   onSelectCategory,
   onResetFilters,
   hasActiveFilters,
+  selectedLang = 'en',
+  onOpenLangModal,
 }) {
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-stone-200">
@@ -31,13 +33,28 @@ export default function TopNav({
             </div>
           </Link>
 
-          <Link
-            to="/profile"
-            className="p-2 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
-            title="My Profile"
-          >
-            <User className="w-5 h-5" />
-          </Link>
+          {/* Right Header Actions: Language Switcher & Profile */}
+          <div className="flex items-center gap-1.5">
+            {/* Language Selector Pill */}
+            <button
+              type="button"
+              onClick={onOpenLangModal}
+              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold text-stone-600 hover:text-stone-900 hover:bg-stone-100 border border-stone-200 transition-colors flex items-center gap-1.5"
+              title="Change language / ഭാഷ മാറ്റുക"
+            >
+              <Globe className="w-3.5 h-3.5 text-stone-500" />
+              <span>{selectedLang === 'ml' ? 'മലയാളം' : 'EN'}</span>
+            </button>
+
+            {/* Profile Link */}
+            <Link
+              to="/profile"
+              className="p-1.5 rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+              title="My Profile"
+            >
+              <User className="w-5 h-5" />
+            </Link>
+          </div>
         </div>
 
         {/* Search + Category */}

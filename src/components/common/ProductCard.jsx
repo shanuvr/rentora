@@ -27,6 +27,14 @@ const SPEC_ICONS = {
   Activity, Cpu, Layers, RotateCw, Truck, Droplets, Crosshair, Eye, Flame,
 };
 
+const formatETA = (dateStr) => {
+  if (!dateStr) return 'Soon';
+  return dateStr
+    .replace(/\s*\d{4}$/, '')
+    .replace('November', 'Nov')
+    .replace('December', 'Dec');
+};
+
 export default function ProductCard({ product, onAddToCart, onSelect }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -68,9 +76,8 @@ export default function ProductCard({ product, onAddToCart, onSelect }) {
           title="Save"
         >
           <Heart
-            className={`w-3 h-3 transition-colors ${
-              isFavorite ? 'fill-red-500 text-red-500' : 'text-stone-500'
-            }`}
+            className={`w-3 h-3 transition-colors ${isFavorite ? 'fill-red-500 text-red-500' : 'text-stone-500'
+              }`}
           />
         </button>
       </div>
@@ -117,48 +124,47 @@ export default function ProductCard({ product, onAddToCart, onSelect }) {
           <div className="min-w-0">
             {/* ETA badge right above price when unavailable */}
             {!isAvailable && (
-              <div className="flex items-center gap-1 text-[9.5px] sm:text-[10.5px] md:text-xs font-semibold text-amber-800 mb-0.5">
-                <Clock className="w-3 h-3 text-amber-600 shrink-0" />
-                <span className="truncate">ETA: {expectedAvailability || 'Soon'}</span>
-              </div>
+                <div className="flex items-center gap-1 text-[9.5px] sm:text-[10.5px] md:text-xs font-semibold text-amber-800 mb-0.5 whitespace-nowrap">
+                  <Clock className="w-3 h-3 text-amber-600 shrink-0" />
+                  <span>ETA: {formatETA(expectedAvailability)}</span>
+                </div>
             )}
 
-            {/* Price Row */}
-            <div className="flex items-baseline gap-1">
-              <span className="text-sm sm:text-base md:text-lg font-bold text-stone-900 tabular-nums">
-                ₹{rentalPrice.toLocaleString('en-IN')}
-              </span>
-              <span className="text-[9px] sm:text-[10px] text-stone-400 font-medium">
-                /{priceUnit}
-              </span>
-              {isAvailable && (
-                <span className="ml-1.5 inline-flex items-center gap-1 text-[9.5px] sm:text-[10.5px] font-medium text-emerald-600">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                  In Stock
-                </span>
-              )}
-            </div>
-          </div>
+                {/* Price Row */}
+                <div className="flex items-baseline gap-1">
+                  <span className="text-sm sm:text-base md:text-lg font-bold text-stone-900 tabular-nums">
+                    ₹{rentalPrice.toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-[9px] sm:text-[10px] text-stone-400 font-medium">
+                    /{priceUnit}
+                  </span>
+                  {isAvailable && (
+                    <span className="ml-1.5 inline-flex items-center gap-1 text-[9.5px] sm:text-[10.5px] font-medium text-emerald-600">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                      In Stock
+                    </span>
+                  )}
+                </div>
+              </div>
 
           {/* CTA Button */}
-          <button
-            type="button"
-            disabled={!isAvailable}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (isAvailable && onAddToCart) onAddToCart(product);
-            }}
-            className={`inline-flex items-center justify-center gap-0.5 h-7 sm:h-8 px-3 sm:px-4 rounded-lg font-semibold text-[10.5px] sm:text-xs transition-all duration-100 shrink-0 ${
-              isAvailable
-                ? 'bg-stone-900 hover:bg-stone-800 active:scale-95 text-white'
-                : 'bg-stone-100 text-stone-400 cursor-not-allowed'
-            }`}
-          >
-            {isAvailable && <Plus className="w-3 h-3 stroke-[2.5]" />}
-            <span>{isAvailable ? 'Add' : 'Unavailable'}</span>
-          </button>
+            <button
+              type="button"
+              disabled={!isAvailable}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (isAvailable && onAddToCart) onAddToCart(product);
+              }}
+              className={`inline-flex items-center justify-center gap-0.5 h-7 sm:h-8 px-3 sm:px-4 rounded-lg font-semibold text-[10.5px] sm:text-xs transition-all duration-100 shrink-0 ${isAvailable
+                  ? 'bg-stone-900 hover:bg-stone-800 active:scale-95 text-white'
+                  : 'bg-stone-100 text-stone-400 cursor-not-allowed'
+                }`}
+            >
+              {isAvailable && <Plus className="w-3 h-3 stroke-[2.5]" />}
+              <span>{isAvailable ? 'Add' : 'Unavailable'}</span>
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  );
+      );
 }
