@@ -41,10 +41,10 @@ export default function ProductCard({ product, onAddToCart, onSelect }) {
   return (
     <div
       onClick={() => onSelect && onSelect(product)}
-      className="group bg-white rounded-xl overflow-hidden border border-stone-200/80 hover:border-stone-300 transition-all duration-150 flex flex-row cursor-pointer h-[138px] sm:h-[148px] md:h-[162px]"
+      className="group bg-white rounded-xl overflow-hidden border border-stone-200/80 hover:border-stone-300 transition-all duration-150 flex flex-row cursor-pointer h-[154px] sm:h-[158px] md:h-[168px]"
     >
-      {/* Image */}
-      <div className="relative w-[110px] xs:w-[120px] sm:w-36 md:w-44 h-full bg-stone-100 shrink-0 overflow-hidden">
+      {/* Left Column: Image */}
+      <div className="relative w-[112px] xs:w-[122px] sm:w-36 md:w-44 h-full bg-stone-100 shrink-0 overflow-hidden">
         {!imgError ? (
           <img
             src={image}
@@ -65,6 +65,7 @@ export default function ProductCard({ product, onAddToCart, onSelect }) {
           type="button"
           onClick={(e) => { e.stopPropagation(); setIsFavorite(!isFavorite); }}
           className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-white/80 backdrop-blur-sm flex items-center justify-center hover:bg-white transition-all active:scale-90"
+          title="Save"
         >
           <Heart
             className={`w-3 h-3 transition-colors ${
@@ -74,18 +75,18 @@ export default function ProductCard({ product, onAddToCart, onSelect }) {
         </button>
       </div>
 
-      {/* Content */}
+      {/* Right Column: Content */}
       <div className="flex-1 p-2.5 sm:p-3 md:p-3.5 flex flex-col justify-between min-w-0">
-        <div className="space-y-1.5">
+        <div>
           {/* Title */}
           <h3 className="text-[13px] sm:text-sm md:text-base font-semibold text-stone-900 leading-tight truncate">
             {name}
           </h3>
 
-          {/* Tag + Specs */}
-          <div className="flex items-center gap-1 sm:gap-1.5 overflow-hidden whitespace-nowrap flex-nowrap">
+          {/* Tag & Specs (Wrapped across lines so all specs + tag are fully visible on mobile) */}
+          <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 mt-1.5">
             {tags[0] && (
-              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[8px] sm:text-[9px] font-semibold bg-amber-50 text-amber-700 shrink-0">
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-md text-[9.5px] sm:text-[10px] md:text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200/60 shrink-0">
                 {tags[0]}
               </span>
             )}
@@ -94,53 +95,52 @@ export default function ProductCard({ product, onAddToCart, onSelect }) {
               return (
                 <span
                   key={idx}
-                  className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-[8px] sm:text-[9.5px] font-medium text-stone-500 bg-stone-50 shrink-0"
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[9px] sm:text-[10px] md:text-[11px] font-medium text-stone-600 bg-stone-100/90 shrink-0"
                 >
-                  <Icon className="w-2.5 h-2.5 text-stone-400" />
-                  {spec.label}
+                  <Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-stone-400" />
+                  <span>{spec.label}</span>
                 </span>
               );
             })}
           </div>
 
-          {/* Bullet */}
+          {/* Bullet Highlight */}
           {bullets[0] && (
-            <p className="text-[9.5px] sm:text-[11px] text-stone-500 truncate leading-snug">
+            <p className="text-[9.5px] sm:text-[10.5px] md:text-[11px] text-stone-500 truncate mt-1.5 leading-snug">
               {bullets[0]}
             </p>
           )}
         </div>
 
-        {/* Bottom: Price + Status + Button */}
-        <div className="flex items-center justify-between gap-1.5 pt-1.5 mt-auto">
-          <div className="flex items-center gap-2 min-w-0">
-            {/* Price */}
-            <div className="flex items-baseline gap-0.5 shrink-0">
+        {/* Bottom Section: Space above price is used for ETA if unavailable */}
+        <div className="mt-auto pt-1 flex items-end justify-between gap-1.5">
+          <div className="min-w-0">
+            {/* ETA badge right above price when unavailable */}
+            {!isAvailable && (
+              <div className="flex items-center gap-1 text-[9.5px] sm:text-[10.5px] md:text-xs font-semibold text-amber-800 mb-0.5">
+                <Clock className="w-3 h-3 text-amber-600 shrink-0" />
+                <span className="truncate">ETA: {expectedAvailability || 'Soon'}</span>
+              </div>
+            )}
+
+            {/* Price Row */}
+            <div className="flex items-baseline gap-1">
               <span className="text-sm sm:text-base md:text-lg font-bold text-stone-900 tabular-nums">
                 ₹{rentalPrice.toLocaleString('en-IN')}
               </span>
               <span className="text-[9px] sm:text-[10px] text-stone-400 font-medium">
                 /{priceUnit}
               </span>
-            </div>
-
-            {/* Status */}
-            {isAvailable ? (
-              <span className="inline-flex items-center gap-0.5 text-[8.5px] sm:text-[10px] font-medium text-emerald-600 shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-                In Stock
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 text-[8.5px] sm:text-[10px] font-medium text-stone-400 truncate max-w-[110px] sm:max-w-none shrink-0">
-                <Clock className="w-2.5 h-2.5 shrink-0" />
-                <span className="truncate">
-                  {expectedAvailability ? `ETA: ${expectedAvailability}` : 'Soon'}
+              {isAvailable && (
+                <span className="ml-1.5 inline-flex items-center gap-1 text-[9.5px] sm:text-[10.5px] font-medium text-emerald-600">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+                  In Stock
                 </span>
-              </span>
-            )}
+              )}
+            </div>
           </div>
 
-          {/* CTA */}
+          {/* CTA Button */}
           <button
             type="button"
             disabled={!isAvailable}
@@ -154,8 +154,8 @@ export default function ProductCard({ product, onAddToCart, onSelect }) {
                 : 'bg-stone-100 text-stone-400 cursor-not-allowed'
             }`}
           >
-            <Plus className="w-3 h-3 stroke-[2.5]" />
-            {isAvailable ? 'Add' : 'Unavailable'}
+            {isAvailable && <Plus className="w-3 h-3 stroke-[2.5]" />}
+            <span>{isAvailable ? 'Add' : 'Unavailable'}</span>
           </button>
         </div>
       </div>
