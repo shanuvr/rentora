@@ -185,21 +185,29 @@ export function AdminSidebar({
         {content}
       </aside>
 
-      {/* Mobile Drawer Overlay */}
-      {isMobileOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-stone-900/60 backdrop-blur-xs transition-opacity duration-200"
-            onClick={onCloseMobile}
-          />
+      {/* Mobile Drawer Overlay with Smooth Left-to-Right Slide Animation */}
+      <div
+        className={`fixed inset-0 z-50 lg:hidden transition-all duration-300 ${
+          isMobileOpen ? 'visible pointer-events-auto' : 'invisible pointer-events-none'
+        }`}
+      >
+        {/* Backdrop Fade */}
+        <div
+          className={`fixed inset-0 bg-stone-900/60 backdrop-blur-xs transition-opacity duration-300 ease-out ${
+            isMobileOpen ? 'opacity-100' : 'opacity-0'
+          }`}
+          onClick={onCloseMobile}
+        />
 
-          {/* Slide-out Sidebar */}
-          <div className="fixed inset-y-0 left-0 w-72 max-w-[85vw] z-50 shadow-2xl animate-in slide-in-from-left duration-200">
-            {content}
-          </div>
+        {/* Slide-out Sidebar Panel (Slides smoothly from left to right) */}
+        <div
+          className={`fixed inset-y-0 left-0 w-72 max-w-[85vw] z-50 shadow-2xl transition-transform duration-300 ease-out transform ${
+            isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          {content}
         </div>
-      )}
+      </div>
     </>
   );
 }
