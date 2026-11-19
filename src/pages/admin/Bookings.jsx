@@ -67,9 +67,14 @@ export default function AdminBookings() {
     return toISODate(d);
   }, []);
 
-  // Filter Bookings
+  // Filter Bookings - Only display bookings that need handover (status === 'Confirmed')
   const filteredBookings = useMemo(() => {
     return bookings.filter((booking) => {
+      // 0. Handover Requirement Filter: Only show bookings awaiting handover
+      if (booking.status !== 'Confirmed') {
+        return false;
+      }
+
       // 1. Search Query Filter
       if (searchQuery.trim()) {
         const query = searchQuery.toLowerCase().trim();

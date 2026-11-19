@@ -51,13 +51,20 @@ export default function AdminBookingHistory() {
 
   const selectedCustomer = searchParams.get('customer') || 'all';
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('in_use');
+
+  // Only consider history bookings: equipment that was actually collected by the customer (Handed Over or Returned)
+  const historyBookings = useMemo(() => {
+    return bookings.filter(
+      (b) => b.status === 'Handed Over' || b.status === 'Returned' || b.status === 'Completed'
+    );
+  }, [bookings]);
 
   // Aggregate customer statistics
   const customerDirectory = useMemo(() => {
     const map = new Map();
 
-    bookings.forEach((b) => {
+    historyBookings.forEach((b) => {
       const c = b.customer || {
         name: 'Nikhil Varghese',
         phone: '+91 98471 20491',
@@ -98,7 +105,7 @@ export default function AdminBookingHistory() {
     });
 
     return Array.from(map.values()).sort((a, b) => b.totalSpent - a.totalSpent);
-  }, [bookings]);
+  }, [historyBookings]);
 
   // Overall metrics
   const overallStats = useMemo(() => {
@@ -107,7 +114,7 @@ export default function AdminBookingHistory() {
     let activeBookings = 0;
     let totalProductsRented = 0;
 
-    bookings.forEach((b) => {
+    historyBookings.forEach((b) => {
       totalRevenue += b.totalAmount || b.subtotal || 0;
       if (b.status === 'Returned' || b.status === 'Completed') {
         completedBookings += 1;
@@ -120,18 +127,18 @@ export default function AdminBookingHistory() {
     });
 
     return {
-      totalBookings: bookings.length,
+      totalBookings: historyBookings.length,
       uniqueCustomers: customerDirectory.length,
       totalProductsRented,
       totalRevenue,
       completedBookings,
       activeBookings,
     };
-  }, [bookings, customerDirectory]);
+  }, [historyBookings, customerDirectory]);
 
   // Filtered bookings list
   const filteredBookings = useMemo(() => {
-    return bookings.filter((b) => {
+    return historyBookings.filter((b) => {
       const cName = b.customer?.name || 'Nikhil Varghese';
       const cPhone = b.customer?.phone || '';
 
@@ -148,8 +155,6 @@ export default function AdminBookingHistory() {
           if (b.status !== 'Returned' && b.status !== 'Completed') return false;
         } else if (statusFilter === 'in_use') {
           if (b.status !== 'Handed Over') return false;
-        } else if (statusFilter === 'confirmed') {
-          if (b.status !== 'Confirmed') return false;
         }
       }
 
@@ -170,7 +175,7 @@ export default function AdminBookingHistory() {
 
       return true;
     });
-  }, [bookings, selectedCustomer, statusFilter, searchQuery]);
+  }, [historyBookings, selectedCustomer, statusFilter, searchQuery]);
 
   // Handle switching customer
   const handleSelectCustomer = (name) => {
@@ -185,14 +190,14 @@ export default function AdminBookingHistory() {
 
   const handleResetFilters = () => {
     setSearchQuery('');
-    setStatusFilter('all');
+    setStatusFilter('in_use');
     const next = new URLSearchParams(searchParams);
     next.delete('customer');
     setSearchParams(next);
   };
 
   const hasActiveFilters =
-    selectedCustomer !== 'all' || searchQuery.trim().length > 0 || statusFilter !== 'all';
+    selectedCustomer !== 'all' || searchQuery.trim().length > 0 || statusFilter !== 'in_use';
 
   const selectedCustomerData = customerDirectory.find(
     (c) => c.name.toLowerCase() === selectedCustomer.toLowerCase()
@@ -285,8 +290,8 @@ export default function AdminBookingHistory() {
           )}
         </div>
 
-        {/* 2 Dropdowns Grid: User Dropdown & Status Dropdown */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-center">
+        {/* 2 Dropdowns Grid: User Dropdown & Status Dropdown (Side-by-side on mobile and desktop) */}
+        <div className="grid grid-cols-2 gap-2 items-center">
           {/* User Selector Dropdown */}
           <div className="relative">
             <select
@@ -299,7 +304,7 @@ export default function AdminBookingHistory() {
               }`}
             >
               <option value="all" className="bg-white text-stone-900">
-                All Users ({customerDirectory.length} users · {overallStats.totalProductsRented} tools rented)
+                All Users ({customerDirectory.length})
               </option>
               {customerDirectory.map((cust) => (
                 <option
@@ -307,7 +312,7 @@ export default function AdminBookingHistory() {
                   value={cust.name}
                   className="bg-white text-stone-900"
                 >
-                  {cust.name} — {cust.bookingCount} bookings · {cust.productsRentedCount} {cust.productsRentedCount === 1 ? 'product' : 'products'} (₹{cust.totalSpent})
+                  {cust.name} ({cust.bookingCount})
                 </option>
               ))}
             </select>
@@ -318,7 +323,7 @@ export default function AdminBookingHistory() {
             />
           </div>
 
-          {/* Status Dropdown */}
+          {/* Status Dropdown - Default: In Customer Possession */}
           <div className="relative">
             <select
               value={statusFilter}
@@ -329,17 +334,14 @@ export default function AdminBookingHistory() {
                   : 'bg-white text-stone-700 border-stone-300 focus:border-stone-900'
               }`}
             >
-              <option value="all" className="bg-white text-stone-900">
-                All Rental Statuses
+              <option value="in_use" className="bg-white text-stone-900">
+                In Customer Possession
               </option>
               <option value="returned" className="bg-white text-stone-900">
                 Returned & Closed
               </option>
-              <option value="in_use" className="bg-white text-stone-900">
-                In Customer Possession (Handed Over)
-              </option>
-              <option value="confirmed" className="bg-white text-stone-900">
-                Confirmed (Upcoming Pickup)
+              <option value="all" className="bg-white text-stone-900">
+                All History
               </option>
             </select>
             <ChevronDown
@@ -355,7 +357,11 @@ export default function AdminBookingHistory() {
           <div className="flex items-center justify-between text-xs pt-0.5 px-0.5">
             <span className="text-[11px] text-stone-500 font-medium truncate">
               Filtering: {selectedCustomer !== 'all' ? selectedCustomer : 'All Users'}
-              {statusFilter !== 'all' ? ` · ${statusFilter}` : ''}
+              {statusFilter === 'in_use'
+                ? ' · In Possession'
+                : statusFilter === 'returned'
+                ? ' · Returned'
+                : ' · All History'}
               {searchQuery ? ` · "${searchQuery}"` : ''}
             </span>
             <button

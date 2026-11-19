@@ -607,7 +607,7 @@ export default function AdminLayout() {
       <AdminSidebar
         isMobileOpen={isMobileOpen}
         onCloseMobile={() => setIsMobileOpen(false)}
-        bookingsCount={bookings.length}
+        bookingsCount={bookings.filter((b) => b.status === 'Confirmed').length}
         undeliveredCount={undeliveredCount}
         etrDueCount={etrDueCount}
       />

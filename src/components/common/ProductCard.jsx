@@ -42,6 +42,7 @@ export default function ProductCard({
   onSelect,
   isInCart = false,
   onViewCart,
+  onUnavailableClick,
 }) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [imgError, setImgError] = useState(false);
@@ -60,8 +61,16 @@ export default function ProductCard({
 
   return (
     <div
-      onClick={() => onSelect && onSelect(product)}
-      className="group bg-white rounded-xl overflow-hidden border border-stone-300 shadow-xs hover:border-stone-400 hover:shadow-sm transition-all duration-150 flex flex-row cursor-pointer h-[154px] sm:h-[158px] md:h-[168px]"
+      onClick={() => {
+        if (!isAvailable) {
+          if (onUnavailableClick) onUnavailableClick(product);
+          return;
+        }
+        if (onSelect) onSelect(product);
+      }}
+      className={`group bg-white rounded-xl overflow-hidden border border-stone-300 shadow-xs hover:border-stone-400 hover:shadow-sm transition-all duration-150 flex flex-row cursor-pointer h-[154px] sm:h-[158px] md:h-[168px] ${
+        !isAvailable ? 'opacity-95' : ''
+      }`}
     >
       {/* Left Column: Image */}
       <div className="relative w-[112px] xs:w-[122px] sm:w-36 md:w-44 h-full bg-stone-100 shrink-0 overflow-hidden border-r border-stone-200">
@@ -169,22 +178,26 @@ export default function ProductCard({
           {/* CTA Button */}
             <button
               type="button"
-              disabled={!isAvailable}
               onClick={(e) => {
                 e.stopPropagation();
-                if (!isAvailable) return;
+                if (!isAvailable) {
+                  if (onUnavailableClick) onUnavailableClick(product);
+                  return;
+                }
                 if (isInCart && onViewCart) {
                   onViewCart(product);
                 } else if (onAddToCart) {
                   onAddToCart(product);
                 }
               }}
-              className={`inline-flex items-center justify-center gap-1 h-7 sm:h-8 px-3 sm:px-3.5 rounded-lg font-semibold text-[10.5px] sm:text-xs transition-all duration-150 shrink-0 ${isAvailable
+              className={`inline-flex items-center justify-center gap-1 h-7 sm:h-8 px-3 sm:px-3.5 rounded-lg font-semibold text-[10.5px] sm:text-xs transition-all duration-150 shrink-0 cursor-pointer ${
+                isAvailable
                   ? isInCart
-                    ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white shadow-2xs cursor-pointer'
-                    : 'bg-stone-900 hover:bg-stone-800 active:scale-95 text-white cursor-pointer'
-                  : 'bg-stone-100 text-stone-400 cursor-not-allowed'
-                }`}
+                    ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white shadow-2xs'
+                    : 'bg-stone-900 hover:bg-stone-800 active:scale-95 text-white'
+                  : 'bg-stone-100 hover:bg-stone-200 active:scale-95 text-stone-600 border border-stone-200 shadow-2xs'
+              }`}
+              title={!isAvailable ? 'View expected return date (ETA)' : undefined}
             >
               {isAvailable ? (
                 isInCart ? (

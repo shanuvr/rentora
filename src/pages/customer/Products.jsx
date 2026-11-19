@@ -4,6 +4,7 @@ import { useOutletContext, Link, useNavigate } from 'react-router-dom';
 import TopNav from '../../components/customer/TopNav';
 import ProductCard from '../../components/common/ProductCard';
 import RentalDateModal from '../../components/customer/RentalDateModal';
+import UnavailableModal from '../../components/customer/UnavailableModal';
 import { getStoredProducts } from '../../data/products';
 
 export default function Products() {
@@ -59,8 +60,9 @@ export default function Products() {
     };
   }, []);
 
-  // Modal State for Screen 3
+  // Modal State for Screen 3 & Unavailable Modal
   const [selectedProductForModal, setSelectedProductForModal] = useState(null);
+  const [unavailableProductForModal, setUnavailableProductForModal] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
 
   const handleResetFilters = () => {
@@ -95,6 +97,10 @@ export default function Products() {
 
   // Open the Rental Date Modal on Add
   const handleAddToCart = (product) => {
+    if (product?.isAvailable === false) {
+      setUnavailableProductForModal(product);
+      return;
+    }
     setSelectedProductForModal(product);
   };
 
@@ -135,6 +141,7 @@ export default function Products() {
                 isInCart={cartProductIds.has(product.id)}
                 onAddToCart={handleAddToCart}
                 onSelect={handleAddToCart}
+                onUnavailableClick={(p) => setUnavailableProductForModal(p)}
                 onViewCart={() => navigate('/cart')}
               />
             ))}
@@ -167,6 +174,13 @@ export default function Products() {
         onClose={() => setSelectedProductForModal(null)}
         product={selectedProductForModal}
         onConfirmAdd={handleConfirmAddToCart}
+      />
+
+      {/* Unavailable / Already Booked Modal */}
+      <UnavailableModal
+        isOpen={Boolean(unavailableProductForModal)}
+        onClose={() => setUnavailableProductForModal(null)}
+        product={unavailableProductForModal}
       />
 
       {/* Toast Notification when added */}

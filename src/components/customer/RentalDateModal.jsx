@@ -65,7 +65,7 @@ export default function RentalDateModal({
     }
   }
 
-  if (!isOpen || !product) return null;
+  if (!isOpen || !product || product.isAvailable === false) return null;
 
   const rentalDays = calculateDays(fromDate, toDate);
   const rentalSubtotal = product.rentalPrice * rentalDays;
@@ -95,7 +95,10 @@ export default function RentalDateModal({
   };
 
   const handleConfirm = () => {
-    if (isSubmitting) return;
+    if (isSubmitting || product.isAvailable === false) {
+      if (onClose) onClose();
+      return;
+    }
     setIsSubmitting(true);
 
     try {
