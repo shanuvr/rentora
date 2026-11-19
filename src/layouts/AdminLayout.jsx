@@ -9,7 +9,12 @@ const getInitialBookings = () => {
     const stored = localStorage.getItem('rentora_bookings');
     if (stored) {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length >= 8 && parsed.some((b) => b.customer?.name === 'Nikhil Varghese')) {
+      if (
+        Array.isArray(parsed) &&
+        parsed.length >= 10 &&
+        parsed.some((b) => b.bookingId === 'BK-310492') &&
+        parsed.some((b) => b.customer?.name === 'Nikhil Varghese')
+      ) {
         const defaultTimes = [
           'Just now',
           'Just now',
@@ -77,7 +82,9 @@ const getInitialBookings = () => {
 
     const yesterday = daysAgo(1);
     const twoDaysAgo = daysAgo(2);
+    const threeDaysAgo = daysAgo(3);
     const fourDaysAgo = daysAgo(4);
+    const fiveDaysAgo = daysAgo(5);
     const sixDaysAgo = daysAgo(6);
     const eightDaysAgo = daysAgo(8);
     const tenDaysAgo = daysAgo(10);
@@ -333,7 +340,121 @@ const getInitialBookings = () => {
         totalAmount: 450,
       },
 
-      // 7. Basil Eldhose (Aluva) - 2:15 PM, Returned
+      // 7. Overdue 1: Midhun Mohan (Kochi) - 2 Days Overdue
+      {
+        bookingId: 'BK-310492',
+        txnId: 'TXN-382910',
+        bookingTime: '3:40 PM',
+        createdAt: fiveDaysAgo.toISOString(),
+        status: 'Handed Over',
+        pickupStatus: 'collected',
+        customer: {
+          name: 'Midhun Mohan',
+          phone: '+91 97461 82930',
+          location: 'Vyttila, Kochi',
+        },
+        items: [
+          {
+            id: 'tool-001',
+            name: 'Electric Impact Hammer Drill (13mm)',
+            category: 'drilling',
+            categoryName: 'Drills & Breakers',
+            image: '/images/tools/drill.jpg',
+            rentalPrice: 250,
+            priceUnit: 'day',
+            stock: 4,
+            quantity: 1,
+            fromDate: toISO(fiveDaysAgo),
+            toDate: toISO(twoDaysAgo),
+            formattedFrom: formatSeedDate(fiveDaysAgo),
+            formattedTo: formatSeedDate(twoDaysAgo),
+            rentalDays: 3,
+            subtotal: 750,
+            totalAmount: 750,
+          },
+        ],
+        subtotal: 750,
+        depositAmount: 0,
+        totalAmount: 750,
+      },
+
+      // 8. Overdue 2: Anjali Kurian (Ernakulam) - 1 Day Overdue
+      {
+        bookingId: 'BK-429018',
+        txnId: 'TXN-741920',
+        bookingTime: '1:15 PM',
+        createdAt: fourDaysAgo.toISOString(),
+        status: 'Handed Over',
+        pickupStatus: 'collected',
+        customer: {
+          name: 'Anjali Kurian',
+          phone: '+91 94462 10945',
+          location: 'Kaloor, Ernakulam',
+        },
+        items: [
+          {
+            id: 'tool-003',
+            name: '4-Inch Angle Grinder Machine (850W)',
+            category: 'grinding',
+            categoryName: 'Grinders & Cutters',
+            image: '/images/tools/angle_grinder.jpg',
+            rentalPrice: 300,
+            priceUnit: 'day',
+            stock: 3,
+            quantity: 1,
+            fromDate: toISO(fourDaysAgo),
+            toDate: toISO(yesterday),
+            formattedFrom: formatSeedDate(fourDaysAgo),
+            formattedTo: formatSeedDate(yesterday),
+            rentalDays: 3,
+            subtotal: 900,
+            totalAmount: 900,
+          },
+        ],
+        subtotal: 900,
+        depositAmount: 0,
+        totalAmount: 900,
+      },
+
+      // 9. Overdue 3: Rahul Rajan (Aluva) - 3 Days Overdue
+      {
+        bookingId: 'BK-518204',
+        txnId: 'TXN-839201',
+        bookingTime: '5:20 PM',
+        createdAt: sixDaysAgo.toISOString(),
+        status: 'Handed Over',
+        pickupStatus: 'collected',
+        customer: {
+          name: 'Rahul Rajan',
+          phone: '+91 98950 43219',
+          location: 'Aluva, Ernakulam',
+        },
+        items: [
+          {
+            id: 'tool-002',
+            name: '7-Inch Wood Circular Saw (1400W)',
+            category: 'cutting',
+            categoryName: 'Wood & Metal Saws',
+            image: '/images/tools/wood_saw.jpg',
+            rentalPrice: 400,
+            priceUnit: 'day',
+            stock: 6,
+            quantity: 1,
+            fromDate: toISO(sixDaysAgo),
+            toDate: toISO(threeDaysAgo),
+            formattedFrom: formatSeedDate(sixDaysAgo),
+            formattedTo: formatSeedDate(threeDaysAgo),
+            rentalDays: 3,
+            subtotal: 1200,
+            totalAmount: 1200,
+          },
+        ],
+        subtotal: 1200,
+        depositAmount: 0,
+        totalAmount: 1200,
+      },
+
+      // 10. Basil Eldhose (Aluva) - 2:15 PM, Returned
       {
         bookingId: 'BK-603192',
         txnId: 'TXN-658201',
