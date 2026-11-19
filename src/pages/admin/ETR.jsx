@@ -91,9 +91,9 @@ export default function AdminETR() {
           uniqueId: `${booking.bookingId}-${item.id || idx}`,
           bookingId: booking.bookingId,
           customer: booking.customer || {
-            name: 'Rahul Sharma',
-            phone: '+91 98765 43210',
-            location: 'Main Hub',
+            name: 'Nikhil Varghese',
+            phone: '+91 98471 20491',
+            location: 'Kochi, Kerala',
           },
           bookingStatus: booking.status,
           bookingCreatedAt: booking.createdAt,

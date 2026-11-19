@@ -133,6 +133,7 @@ export default function Cart() {
       const newBooking = {
         bookingId: generateRandomId('BK'),
         txnId: generatedTxnId,
+        bookingTime: 'Just now',
         createdAt: new Date().toISOString(),
         status: 'Confirmed',
         items: [...cartItems],

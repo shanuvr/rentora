@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Mail,
   Phone,
@@ -15,34 +15,32 @@ import {
 } from 'lucide-react';
 import { Link, useOutletContext } from 'react-router-dom';
 
+const getStoredBookings = () => {
+  try {
+    const stored = localStorage.getItem('rentora_bookings');
+    return stored ? JSON.parse(stored) : [];
+  } catch {
+    return [];
+  }
+};
+
 export default function Profile() {
   const { selectedLang, openLanguageModal } = useOutletContext() || {};
-  const [bookings, setBookings] = useState([]);
+  const [bookings, setBookings] = useState(getStoredBookings);
   const [showBookingsModal, setShowBookingsModal] = useState(false);
 
   const customer = {
-    name: 'Rahul Sharma',
-    phone: '+91 98765 43210',
-    email: 'rahul.sharma@example.com',
+    name: 'Nikhil Varghese',
+    phone: '+91 98471 20491',
+    email: 'nikhil.varghese@example.com',
     location: 'Kochi, Kerala, India',
     memberSince: 'October 2026',
   };
 
-  const loadBookings = () => {
-    try {
-      const stored = localStorage.getItem('rentora_bookings');
-      if (stored) {
-        setBookings(JSON.parse(stored));
-      } else {
-        setBookings([]);
-      }
-    } catch {
-      setBookings([]);
-    }
-  };
-
   useEffect(() => {
-    loadBookings();
+    const handleStorage = () => setBookings(getStoredBookings());
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
   const totalSpent = bookings.reduce(

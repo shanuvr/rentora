@@ -59,9 +59,9 @@ export default function AdminBookingHistory() {
 
     bookings.forEach((b) => {
       const c = b.customer || {
-        name: 'Rahul Sharma',
-        phone: '+91 98765 43210',
-        location: 'Indiranagar, Bangalore',
+        name: 'Nikhil Varghese',
+        phone: '+91 98471 20491',
+        location: 'Kadavanthra, Kochi',
       };
       const key = c.name || 'Anonymous Customer';
 
@@ -132,7 +132,7 @@ export default function AdminBookingHistory() {
   // Filtered bookings list
   const filteredBookings = useMemo(() => {
     return bookings.filter((b) => {
-      const cName = b.customer?.name || 'Rahul Sharma';
+      const cName = b.customer?.name || 'Nikhil Varghese';
       const cPhone = b.customer?.phone || '';
 
       // 1. Customer selection
@@ -441,8 +441,8 @@ export default function AdminBookingHistory() {
             const isHandedOver = booking.status === 'Handed Over';
             const isConfirmed = booking.status === 'Confirmed';
             const customer = booking.customer || {
-              name: 'Rahul Sharma',
-              phone: '+91 98765 43210',
+              name: 'Nikhil Varghese',
+              phone: '+91 98471 20491',
             };
 
             return (
@@ -464,6 +464,7 @@ export default function AdminBookingHistory() {
                     <span className="text-stone-300">·</span>
                     <span className="text-stone-500 font-medium">
                       Booked: {formatFullDate(booking.createdAt)}
+                      {booking.bookingTime && booking.bookingTime !== 'Just now' ? ` · ${booking.bookingTime}` : ''}
                     </span>
                     <span className="text-stone-300">·</span>
 

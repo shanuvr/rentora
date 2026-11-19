@@ -34,6 +34,24 @@ const formatCompactDate = (dateVal) => {
   return String(dateVal);
 };
 
+// Realistic booking times: 3 "Just now", followed by diverse timestamps
+const DEFAULT_BOOKING_TIMES = [
+  'Just now',
+  'Just now',
+  'Just now',
+  '10:45 AM',
+  '9:15 AM',
+  '11:30 AM',
+  '2:15 PM',
+  '4:20 PM',
+  '1:45 PM',
+];
+
+const getBookingTime = (booking, idx) => {
+  if (booking?.bookingTime) return booking.bookingTime;
+  return DEFAULT_BOOKING_TIMES[idx % DEFAULT_BOOKING_TIMES.length] || '10:30 AM';
+};
+
 export default function AdminBookings() {
   const { bookings = [], updateBookingStatus } = useOutletContext() || {};
 
@@ -249,46 +267,63 @@ export default function AdminBookings() {
       {/* Bookings List Cards (Clean, Single-Layer, No Inner Nested Boxes) */}
       <div className="space-y-3">
         {filteredBookings.length > 0 ? (
-          filteredBookings.map((booking) => {
+          filteredBookings.map((booking, idx) => {
             const isHandedOver = booking.status === 'Handed Over' || booking.status === 'Completed';
+            const bookingTimeStr = getBookingTime(booking, idx);
 
             return (
               <div
                 key={booking.bookingId}
                 className="bg-white rounded-xl border border-stone-200 shadow-2xs hover:border-stone-300 transition-all overflow-hidden"
               >
-                {/* Header: ID, Date, Customer & Status Badge */}
-                <div className="px-4 py-2.5 border-b border-stone-100 flex flex-wrap items-center justify-between gap-2 text-xs">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-stone-900">
+                {/* Header: ID, Customer Name, Time, Date & Status Badge */}
+                <div className="px-3.5 py-2 border-b border-stone-100 flex items-center justify-between gap-2 text-xs">
+                  <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                    <span className="font-black text-stone-900 text-xs shrink-0">
                       #{booking.bookingId}
                     </span>
-                    <span className="text-stone-300">·</span>
-                    <span className="text-stone-400">
-                      {formatCompactDate(booking.createdAt)}
-                    </span>
-                    <span className="text-stone-300">·</span>
+
+                    <span className="text-stone-300 text-xs">·</span>
+
+                    {/* Customer Name next to Booking ID */}
                     <Link
-                      to={`/admin/history?customer=${encodeURIComponent(booking.customer?.name || 'Rahul Sharma')}`}
-                      className="text-stone-700 hover:text-amber-800 font-medium hover:underline inline-flex items-center gap-1 transition-colors"
+                      to={`/admin/history?customer=${encodeURIComponent(booking.customer?.name || 'Nikhil Varghese')}`}
+                      className="font-bold text-stone-900 text-xs hover:text-amber-800 hover:underline transition-colors shrink-0"
                       title="View complete customer rental history"
                     >
-                      <span>{booking.customer?.name || 'Rahul Sharma'}</span>
-                      {booking.customer?.phone ? (
-                        <span className="text-stone-400 font-normal">({booking.customer.phone})</span>
-                      ) : null}
+                      {booking.customer?.name || 'Nikhil Varghese'}
                     </Link>
+
+                    {booking.customer?.phone && (
+                      <span className="text-[10.5px] text-stone-400 font-normal hidden sm:inline">
+                        ({booking.customer.phone})
+                      </span>
+                    )}
+
+                    <span className="text-stone-300 text-xs">·</span>
+
+                    {/* Booking Time */}
+                    <span className="text-[11px] text-stone-500 font-medium shrink-0">
+                      {bookingTimeStr}
+                    </span>
+
+                    <span className="text-stone-300 text-xs">·</span>
+
+                    {/* Date */}
+                    <span className="text-[11px] text-stone-400 shrink-0">
+                      {formatCompactDate(booking.createdAt)}
+                    </span>
                   </div>
 
                   {/* Status Badge */}
-                  <div>
+                  <div className="shrink-0 self-center">
                     {isHandedOver ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10.5px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
                         <PackageCheck className="w-3 h-3" />
                         <span>Handed Over</span>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10.5px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                         <CheckCircle2 className="w-3 h-3" />
                         <span>Confirmed</span>
                       </span>

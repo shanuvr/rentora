@@ -1,5 +1,4 @@
-import React from 'react';
-import { PackageX, AlertTriangle, Phone, CheckCircle2, Clock, User, Calendar } from 'lucide-react';
+import { PackageX, AlertTriangle, Clock } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
 
 export default function AdminUndelivered() {
@@ -82,7 +81,7 @@ export default function AdminUndelivered() {
                   </div>
 
                   <p className="text-[11px] text-stone-500 font-medium pt-1 border-t border-stone-200/60">
-                    Customer: <strong>{booking.customer?.name || 'Rahul Sharma'}</strong> • {booking.customer?.phone || '+91 98765 43210'}
+                    Customer: <strong>{booking.customer?.name || 'Nikhil Varghese'}</strong> • {booking.customer?.phone || '+91 98471 20491'}
                   </p>
                 </div>
 
