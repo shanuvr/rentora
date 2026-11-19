@@ -223,33 +223,30 @@ export default function AdminBookings() {
           <button
             type="button"
             onClick={() => setDateFilter('')}
-            className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-              dateFilter === ''
+            className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${dateFilter === ''
                 ? 'bg-stone-900 text-white shadow-2xs'
                 : 'bg-white text-stone-600 hover:bg-stone-100 border border-stone-200'
-            }`}
+              }`}
           >
             All
           </button>
           <button
             type="button"
             onClick={() => setDateFilter(todayStr)}
-            className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-              dateFilter === todayStr
+            className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${dateFilter === todayStr
                 ? 'bg-stone-900 text-white shadow-2xs'
                 : 'bg-white text-stone-600 hover:bg-stone-100 border border-stone-200'
-            }`}
+              }`}
           >
             Today
           </button>
           <button
             type="button"
             onClick={() => setDateFilter(tomorrowStr)}
-            className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${
-              dateFilter === tomorrowStr
+            className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${dateFilter === tomorrowStr
                 ? 'bg-stone-900 text-white shadow-2xs'
                 : 'bg-white text-stone-600 hover:bg-stone-100 border border-stone-200'
-            }`}
+              }`}
           >
             Tomorrow
           </button>
@@ -273,11 +270,15 @@ export default function AdminBookings() {
           filteredBookings.map((booking, idx) => {
             const isHandedOver = booking.status === 'Handed Over' || booking.status === 'Completed';
             const bookingTimeStr = getBookingTime(booking, idx);
+            const isJustNow = bookingTimeStr === 'Just now';
 
             return (
               <div
                 key={booking.bookingId}
-                className="bg-white rounded-xl border border-stone-200 shadow-2xs hover:border-stone-300 transition-all overflow-hidden"
+                className={`bg-white rounded-xl shadow-2xs transition-all overflow-hidden ${isJustNow
+                    ? 'border border-emerald-300/80 hover:border-emerald-400'
+                    : 'border border-stone-200 hover:border-stone-300'
+                  }`}
               >
                 {/* Header: ID, Customer Name, Time & Date */}
                 <div className="px-3.5 py-2 border-b border-stone-100 flex items-center justify-between gap-2 text-xs">
@@ -406,11 +407,10 @@ export default function AdminBookings() {
                           isHandedOver ? 'Confirmed' : 'Handed Over'
                         )
                       }
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shadow-2xs cursor-pointer ${
-                        isHandedOver
+                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors shadow-2xs cursor-pointer ${isHandedOver
                           ? 'bg-white hover:bg-stone-100 text-stone-700 border border-stone-300'
                           : 'bg-stone-900 hover:bg-stone-800 text-white'
-                      }`}
+                        }`}
                     >
                       {isHandedOver ? 'Undo Handover' : 'Mark Handed Over'}
                     </button>
