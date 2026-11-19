@@ -1,12 +1,10 @@
 import { useState, useMemo } from 'react';
 import {
   CalendarCheck,
-  CheckCircle2,
   Search,
   X,
   Calendar,
   RotateCcw,
-  PackageCheck,
   ChevronDown,
 } from 'lucide-react';
 import { useOutletContext, Link } from 'react-router-dom';
@@ -281,7 +279,7 @@ export default function AdminBookings() {
                 key={booking.bookingId}
                 className="bg-white rounded-xl border border-stone-200 shadow-2xs hover:border-stone-300 transition-all overflow-hidden"
               >
-                {/* Header: ID, Customer Name, Time, Date & Status Badge */}
+                {/* Header: ID, Customer Name, Time & Date */}
                 <div className="px-3.5 py-2 border-b border-stone-100 flex items-center justify-between gap-2 text-xs">
                   <div className="flex items-center gap-1.5 flex-wrap min-w-0">
                     <span className="font-black text-stone-900 text-xs shrink-0">
@@ -318,21 +316,6 @@ export default function AdminBookings() {
                     <span className="text-[11px] text-stone-400 shrink-0">
                       {formatCompactDate(booking.createdAt)}
                     </span>
-                  </div>
-
-                  {/* Status Badge */}
-                  <div className="shrink-0 self-center">
-                    {isHandedOver ? (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                        <PackageCheck className="w-3 h-3" />
-                        <span>Handed Over</span>
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        <CheckCircle2 className="w-3 h-3" />
-                        <span>Confirmed</span>
-                      </span>
-                    )}
                   </div>
                 </div>
 
